@@ -1,0 +1,203 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-image: url('images/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 200vh;
+    position: relative;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    scroll-behavior: smooth;
+}
+
+/* Header Section */
+.header-section {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 10;
+}
+
+.logo-container {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 15;
+}
+
+.company-logo {
+    height: 40px;
+    width: auto;
+    filter: brightness(0.9);
+    transition: all 0.3s ease;
+}
+
+.company-logo:hover {
+    filter: brightness(1.1);
+    transform: scale(1.05);
+}
+
+.main-title {
+    font-size: 3.5rem;
+    font-weight: 300;
+    color: #d0d0d0;
+    margin-bottom: 30px;
+    letter-spacing: -0.02em;
+    margin: 0 0 30px 0;
+}
+
+.nav-bar {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 25px;
+    padding: 12px 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.nav-item {
+    color: #d0d0d0;
+    font-size: 0.9rem;
+    font-weight: 300;
+    padding: 8px 16px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-item.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.nav-item:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.nav-dot {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.explore-btn {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 25px;
+    padding: 12px 24px;
+    color: #d0d0d0;
+    font-size: 0.9rem;
+    font-weight: 300;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    z-index: 20; /* Asegurar que esté por encima de otros elementos */
+}
+
+.explore-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.arrow-icon {
+    background: white;
+    color: #3c3c3c;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Description text */
+.description-text {
+    position: fixed;
+    bottom: 40px;
+    left: 40px;
+    color: #d0d0d0;
+    font-size: 3.2rem;
+    line-height: 1.2;
+    font-weight: 300;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    max-width: 700px;
+}
+
+.description-text p {
+    margin: 0;
+}
+
+/* Additional Content Section */
+.content-section {
+    position: relative;
+    top: 100vh;
+    min-height: 100vh;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 80px 40px;
+}
+
+.content-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.content-container h2 {
+    font-size: 2.5rem;
+    color: #d0d0d0;
+    margin-bottom: 30px;
+    font-weight: 300;
+}
+
+.content-container p {
+    font-size: 1.2rem;
+    color: #d0d0d0;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Portal page styles */
+.portal-page {
+    padding: 40px;
+    text-align: center;
+    color: #333;
+}
+
+.portal-page h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: #666;
+}
+
+.portal-page p {
+    font-size: 1.2rem;
+    color: #888;
+}
