@@ -50,15 +50,15 @@
 
     <!-- Header Section -->
     <header class="header-section">
-        <h1 class="main-title">Insight Beyond the Surface</h1>
+                    <h1 class="main-title">Beyond the Surface</h1>
         <nav class="nav-bar">
-            <span class="nav-item active">Aether</span>
+            <span class="nav-item" id="nav-aether">Aether</span>
             <span class="nav-dot">•</span>
-            <span class="nav-item">API</span>
+            <span class="nav-item" id="nav-api">API</span>
             <span class="nav-dot">•</span>
-            <span class="nav-item">Pricing</span>
+            <span class="nav-item" id="nav-pricing">Pricing</span>
             <span class="nav-dot">•</span>
-            <span class="nav-item">Team</span>
+            <span class="nav-item" id="nav-team">Team</span>
         </nav>
     </header>
 
@@ -66,7 +66,7 @@
     <div class="description-text">
         <p>The single platform to<br>
         score, visualize, and<br>
-        monitor location risk</p>
+        monitor location risks</p>
     </div>
     
     <button class="explore-btn" onclick="window.open('portal.html', '_blank')">
@@ -75,10 +75,76 @@
     </button>
 
                 <!-- Additional Content Section -->
-                <section class="content-section">
+                <section class="content-section" id="api-section">
                     <div class="content-container">
                         <!-- Tu contenido aquí -->
                     </div>
                 </section>
-</body>
-</html>
+
+                <script>
+                    // Función para actualizar el menú activo
+                    function updateActiveNav(activeId) {
+                        // Remover clase active de todos los elementos
+                        document.querySelectorAll('.nav-item').forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        
+                        // Agregar clase active al elemento seleccionado
+                        const activeElement = document.getElementById(activeId);
+                        if (activeElement) {
+                            activeElement.classList.add('active');
+                        }
+                    }
+
+                    // Función para hacer scroll suave a una sección
+                    function scrollToSection(sectionId) {
+                        const section = document.getElementById(sectionId);
+                        if (section) {
+                            section.scrollIntoView({ 
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    }
+
+                    // Event listeners para los clics en el menú
+                    document.getElementById('nav-aether').addEventListener('click', function() {
+                        updateActiveNav('nav-aether');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+
+                    document.getElementById('nav-api').addEventListener('click', function() {
+                        updateActiveNav('nav-api');
+                        scrollToSection('api-section');
+                    });
+
+                    document.getElementById('nav-pricing').addEventListener('click', function() {
+                        updateActiveNav('nav-pricing');
+                        // Aquí puedes agregar scroll a la sección de pricing cuando la crees
+                    });
+
+                    document.getElementById('nav-team').addEventListener('click', function() {
+                        updateActiveNav('nav-team');
+                        // Aquí puedes agregar scroll a la sección de team cuando la crees
+                    });
+
+                    // Detectar scroll para cambiar el menú activo automáticamente
+                    window.addEventListener('scroll', function() {
+                        const scrollPosition = window.scrollY;
+                        const windowHeight = window.innerHeight;
+                        
+                        // Si estás en la parte superior (primera sección)
+                        if (scrollPosition < windowHeight * 0.5) {
+                            updateActiveNav('nav-aether');
+                        }
+                        // Si has hecho scroll hacia abajo (sección API)
+                        else if (scrollPosition >= windowHeight * 0.5) {
+                            updateActiveNav('nav-api');
+                        }
+                    });
+
+                    // Inicializar con Aether activo
+                    updateActiveNav('nav-aether');
+                </script>
+            </body>
+            </html>
