@@ -44,8 +44,8 @@ export default function Home() {
           The single platform to iterate, evaluate, deploy, and monitor LLMs
         </p>
         
-              <button className="portal-button" onClick={() => window.open('/map', '_blank')}>
-                <span className="button-text">Explore the portal</span>
+              <button className="portal-button" onClick={() => window.open('/auth', '_blank')}>
+                <span className="button-text">Access the Portal</span>
                 <span className="arrow-circle">→</span>
               </button>
       </div>

@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { getCrimePointsAsGeoJSON, addCrimePoint } from '@/lib/firebase'
+import { getCrimePointsAsGeoJSON, addCrimePoint, auth } from '@/lib/firebase'
+import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { useRouter } from 'next/navigation'
 // Sistema completamente basado en Firebase - sin datos estáticos
 
 export default function MapPage() {
@@ -11,6 +13,9 @@ export default function MapPage() {
   const map = useRef<mapboxgl.Map | null>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
   const [hasToken, setHasToken] = useState(true)
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
   const [canZoomIn, setCanZoomIn] = useState(true)
   const [canZoomOut, setCanZoomOut] = useState(true)
   const [isLocating, setIsLocating] = useState(false)
@@ -258,20 +263,39 @@ export default function MapPage() {
     }
   }
 
+  // Verificar autenticación
   useEffect(() => {
-    // Cargar datos de Firebase al montar el componente
-    const loadData = async () => {
-      await loadCrimeDataFromFirebase()
-      // Reintentar una vez más después de 2 segundos si no hay datos
-      setTimeout(async () => {
-        if (!crimeDataFromFirebase) {
-          console.log('🔄 Reintentando carga de datos de Firebase...')
-          await loadCrimeDataFromFirebase()
-        }
-      }, 2000)
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user)
+        setLoading(false)
+      } else {
+        setUser(null)
+        setLoading(false)
+        // Redirigir a la página de autenticación si no hay usuario
+        router.push('/auth')
+      }
+    })
+
+    return () => unsubscribe()
+  }, [router])
+
+  useEffect(() => {
+    // Cargar datos de Firebase al montar el componente solo si hay usuario
+    if (user) {
+      const loadData = async () => {
+        await loadCrimeDataFromFirebase()
+        // Reintentar una vez más después de 2 segundos si no hay datos
+        setTimeout(async () => {
+          if (!crimeDataFromFirebase) {
+            console.log('🔄 Reintentando carga de datos de Firebase...')
+            await loadCrimeDataFromFirebase()
+          }
+        }, 2000)
+      }
+      loadData()
     }
-    loadData()
-  }, [])
+  }, [user])
 
 
   // Recargar capas del mapa cuando cambien los datos
@@ -578,6 +602,15 @@ export default function MapPage() {
     setSearchResults([])
   }
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      router.push('/auth')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
+  }
+
   const handleGetLocation = () => {
     if (!map.current) return
 
@@ -661,6 +694,23 @@ export default function MapPage() {
   }
 
 
+  // Mostrar loading mientras se verifica la autenticación
+  if (loading) {
+    return (
+      <div className="relative w-screen h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-white text-xl mb-4">Verifying authentication...</div>
+          <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
+        </div>
+      </div>
+    )
+  }
+
+  // Si no hay usuario, no mostrar nada (se redirigirá automáticamente)
+  if (!user) {
+    return null
+  }
+
   return (
     <div className="relative w-screen h-screen bg-gray-900">
       <div ref={mapContainer} className="absolute inset-0" style={{ width: '100%', height: '100%' }} />
@@ -704,6 +754,15 @@ export default function MapPage() {
           >
             🚨
           </button>
+
+          {/* Botón de logout */}
+          <button
+            onClick={handleLogout}
+            className="map-control-bubble"
+            title="Sign Out"
+          >
+            🚪
+          </button>
           
           {/* Controles de zoom */}
           <div className="zoom-controls">
@@ -746,6 +805,13 @@ export default function MapPage() {
             `✅ Firebase (${crimeDataFromFirebase.features.length} puntos)` : 
             '⚠️ Cargando datos...'
           }
+        </div>
+      )}
+
+      {/* Indicador de usuario autenticado */}
+      {user && (
+        <div className="absolute top-20 right-20 bg-blue-500/90 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm z-50 max-w-xs">
+          👤 {user.email}
         </div>
       )}
 
@@ -902,23 +968,23 @@ export default function MapPage() {
           onClick={closeAddCrimeModal}
         >
           <div 
-            className="bg-white rounded-xl shadow-lg w-[500px] h-[600px] overflow-hidden border border-gray-200"
+            className="bg-white rounded-2xl shadow-2xl w-[700px] h-[620px] overflow-hidden"
             style={{ 
               zIndex: 10000,
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.12)'
             }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del modal */}
-            <div className="px-6 py-5 bg-gray-50 border-b border-gray-200">
+            <div className="px-8 py-8 bg-white">
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">Reportar Incidente</h2>
-                  <p className="text-base text-gray-600">Paso {currentStep} de 3</p>
+                  <h2 className="text-3xl font-bold text-gray-900">Reportar Incidente</h2>
+                  <p className="text-lg text-gray-500 mt-2">Paso {currentStep} de 3</p>
                 </div>
                 <button
                   onClick={closeAddCrimeModal}
-                  className="w-9 h-9 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-600 text-xl transition-colors duration-200"
+                  className="w-12 h-12 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 text-2xl transition-colors duration-200"
                   disabled={isAddingCrime}
                 >
                   ×
@@ -927,24 +993,24 @@ export default function MapPage() {
             </div>
 
             {/* Contenido del modal */}
-            <div className="px-6 py-8 flex-1 overflow-y-auto">
+            <div className="px-8 pb-8 flex-1 overflow-y-auto">
               {currentStep === 1 && (
-                <div className="space-y-8">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">Tipo de Incidente</h3>
-                    <p className="text-base text-gray-600">Selecciona el tipo de incidente</p>
+                <div className="h-full flex flex-col">
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Tipo de Incidente</h3>
+                    <p className="text-gray-600">Selecciona el tipo de incidente</p>
                   </div>
                   
                   {/* Grid de tipos de incidentes */}
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-3 flex-1">
                     {incidentTypes.map((incident) => (
                       <button
                         key={incident.id}
                         onClick={() => selectIncidentType(incident.name)}
-                        className="bg-white border border-gray-200 rounded-lg p-6 text-center hover:border-blue-300 hover:bg-blue-50 transition-colors duration-200"
+                        className="bg-white border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 rounded-xl p-4 text-center transition-all duration-200 hover:scale-105"
                       >
-                        <div className="text-3xl mb-3">{incident.icon}</div>
-                        <div className="text-sm text-gray-700 font-medium">{incident.name}</div>
+                        <div className="text-3xl mb-2">{incident.icon}</div>
+                        <div className="text-sm font-medium text-gray-700">{incident.name}</div>
                       </button>
                     ))}
                   </div>
@@ -952,61 +1018,62 @@ export default function MapPage() {
               )}
 
               {currentStep === 2 && (
-                <div className="space-y-8">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">Ubicación y Detalles</h3>
-                    <p className="text-base text-gray-600">Proporciona información básica</p>
+                <div className="h-full flex flex-col">
+                  <div className="text-center mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Ubicación y Detalles</h3>
+                    <p className="text-gray-600">Proporciona información básica</p>
                   </div>
                   
-                  <div>
-                    <label className="block text-base font-medium text-gray-700 mb-3">
-                      Ciudad *
-                    </label>
-                    <input
-                      type="text"
-                      value={newCrimePoint.city}
-                      onChange={(e) => setNewCrimePoint({...newCrimePoint, city: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-                      placeholder="Ej: Berlin, Munich, Hamburg..."
-                      required
-                      disabled={isAddingCrime}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-base font-medium text-gray-700 mb-3">
-                      Descripción *
-                    </label>
-                    <textarea
-                      value={newCrimePoint.details}
-                      onChange={(e) => setNewCrimePoint({...newCrimePoint, details: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-base"
-                      placeholder="Describe brevemente el incidente..."
-                      rows={4}
-                      required
-                      disabled={isAddingCrime}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-base font-medium text-gray-700 mb-3">
-                        Nivel de Riesgo
-                      </label>
-                      <select
-                        value={newCrimePoint.risk}
-                        onChange={(e) => setNewCrimePoint({...newCrimePoint, risk: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-                        disabled={isAddingCrime}
-                      >
-                        <option value="Low">🟢 Bajo</option>
-                        <option value="Medium">🟡 Medio</option>
-                        <option value="High">🔴 Alto</option>
-                      </select>
+                  <div className="space-y-6 flex-1">
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Ciudad *
+                        </label>
+                        <input
+                          type="text"
+                          value={newCrimePoint.city}
+                          onChange={(e) => setNewCrimePoint({...newCrimePoint, city: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Ej: Berlin, Munich, Hamburg..."
+                          required
+                          disabled={isAddingCrime}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Nivel de Riesgo
+                        </label>
+                        <select
+                          value={newCrimePoint.risk}
+                          onChange={(e) => setNewCrimePoint({...newCrimePoint, risk: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          disabled={isAddingCrime}
+                        >
+                          <option value="Low">🟢 Bajo</option>
+                          <option value="Medium">🟡 Medio</option>
+                          <option value="High">🔴 Alto</option>
+                        </select>
+                      </div>
                     </div>
 
                     <div>
-                      <label className="block text-base font-medium text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Descripción *
+                      </label>
+                      <textarea
+                        value={newCrimePoint.details}
+                        onChange={(e) => setNewCrimePoint({...newCrimePoint, details: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                        placeholder="Describe brevemente el incidente..."
+                        rows={4}
+                        required
+                        disabled={isAddingCrime}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
                         Intensidad: {newCrimePoint.intensity}
                       </label>
                       <input
@@ -1016,7 +1083,7 @@ export default function MapPage() {
                         step="0.1"
                         value={newCrimePoint.intensity}
                         onChange={(e) => setNewCrimePoint({...newCrimePoint, intensity: parseFloat(e.target.value)})}
-                        className="w-full h-2"
+                        className="w-full"
                         disabled={isAddingCrime}
                       />
                     </div>
@@ -1025,25 +1092,44 @@ export default function MapPage() {
               )}
 
               {currentStep === 3 && (
-                <div className="space-y-8">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">Confirmar y Enviar</h3>
-                    <p className="text-base text-gray-600">Revisa la información antes de enviar</p>
+                <div className="h-full flex flex-col">
+                  <div className="text-center mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Confirmar y Enviar</h3>
+                    <p className="text-gray-600">Revisa la información antes de enviar</p>
                   </div>
                   
-                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Resumen del Incidente</h4>
-                    <div className="text-base text-gray-700 space-y-3">
-                      <div><span className="font-semibold">Tipo:</span> {newCrimePoint.incident || 'No seleccionado'}</div>
-                      <div><span className="font-semibold">Ciudad:</span> {newCrimePoint.city || 'No especificada'}</div>
-                      <div><span className="font-semibold">Descripción:</span> {newCrimePoint.details || 'No especificada'}</div>
-                      <div><span className="font-semibold">Riesgo:</span> {newCrimePoint.risk}</div>
-                      <div><span className="font-semibold">Intensidad:</span> {newCrimePoint.intensity}</div>
+                  <div className="bg-gray-50 rounded-lg p-8 flex-1">
+                    <h4 className="text-xl font-semibold text-gray-900 mb-6">Resumen del Incidente</h4>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="bg-white rounded-lg p-4 shadow-sm">
+                          <div className="text-sm text-gray-500 mb-1">Tipo de Incidente</div>
+                          <div className="font-semibold text-gray-900">{newCrimePoint.incident || 'No seleccionado'}</div>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 shadow-sm">
+                          <div className="text-sm text-gray-500 mb-1">Ciudad</div>
+                          <div className="font-semibold text-gray-900">{newCrimePoint.city || 'No especificada'}</div>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 shadow-sm">
+                          <div className="text-sm text-gray-500 mb-1">Nivel de Riesgo</div>
+                          <div className="font-semibold text-gray-900">{newCrimePoint.risk}</div>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="bg-white rounded-lg p-4 shadow-sm">
+                          <div className="text-sm text-gray-500 mb-1">Intensidad</div>
+                          <div className="font-semibold text-gray-900">{newCrimePoint.intensity}</div>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 shadow-sm col-span-1">
+                          <div className="text-sm text-gray-500 mb-1">Descripción</div>
+                          <div className="font-semibold text-gray-900">{newCrimePoint.details || 'No especificada'}</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="text-center">
-                    <p className="text-base text-gray-600 leading-relaxed">
+                  <div className="text-center mt-6">
+                    <p className="text-base text-gray-600">
                       Al enviar, este incidente será agregado al mapa y visible para otros usuarios.
                     </p>
                   </div>
@@ -1051,14 +1137,14 @@ export default function MapPage() {
               )}
             </div>
 
-            {/* Footer con botones simples */}
-            <div className="bg-gray-50 border-t border-gray-200 p-4">
+            {/* Footer con botones limpios */}
+            <div className="bg-white border-t border-gray-200 p-6">
               <div className="flex gap-3">
                 {currentStep > 1 && (
                   <button
                     type="button"
                     onClick={prevStep}
-                    className="px-4 py-2 text-gray-600 font-medium bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200"
+                    className="px-4 py-2 text-gray-600 font-medium bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
                     disabled={isAddingCrime}
                   >
                     Atrás
@@ -1068,7 +1154,7 @@ export default function MapPage() {
                 <button
                   type="button"
                   onClick={closeAddCrimeModal}
-                  className={`px-4 py-2 text-gray-600 font-medium bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200 ${
+                  className={`px-4 py-2 text-gray-600 font-medium bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 ${
                     currentStep > 1 ? '' : 'flex-1'
                   }`}
                   disabled={isAddingCrime}
@@ -1080,7 +1166,7 @@ export default function MapPage() {
                   <button
                     type="button"
                     onClick={nextStep}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors duration-200"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
                     disabled={isAddingCrime}
                   >
                     Siguiente
@@ -1090,7 +1176,7 @@ export default function MapPage() {
                     type="button"
                     onClick={handleAddCrimePoint}
                     disabled={isAddingCrime || !newCrimePoint.city || !newCrimePoint.details}
-                    className="flex-1 px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    className="flex-1 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   >
                     {isAddingCrime ? 'Enviando...' : 'Enviar Incidente'}
                   </button>

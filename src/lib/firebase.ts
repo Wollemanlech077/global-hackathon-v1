@@ -15,8 +15,24 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-BPJ4KR9ZDD"
 };
 
+// Verificar que la configuración esté completa
+const requiredConfigKeys = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
+const missingKeys = requiredConfigKeys.filter(key => !firebaseConfig[key as keyof typeof firebaseConfig]);
+
+if (missingKeys.length > 0) {
+  console.error('Firebase configuration missing:', missingKeys);
+  throw new Error(`Firebase configuration is missing required keys: ${missingKeys.join(', ')}`);
+}
+
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+let app;
+try {
+  app = initializeApp(firebaseConfig);
+  console.log('Firebase initialized successfully');
+} catch (error) {
+  console.error('Error initializing Firebase:', error);
+  throw error;
+}
 
 // Initialize Firebase services
 export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
