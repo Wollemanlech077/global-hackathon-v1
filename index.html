@@ -5,93 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ACTA Hackathon Project</title>
     <link rel="stylesheet" href="style.css">
-    
-    <!-- Firebase SDK -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getStorage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-        
-        // Demo Firebase configuration (replace with your actual config)
-        const firebaseConfig = {
-            apiKey: "demo-api-key",
-            authDomain: "demo-project.firebaseapp.com",
-            projectId: "demo-project",
-            storageBucket: "demo-project.firebasestorage.app",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:demo123",
-            measurementId: "G-DEMO123"
-        };
-        
-        try {
-            // Initialize Firebase
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const db = getFirestore(app);
-            const storage = getStorage(app);
-            
-            // Make Firebase available globally
-            window.firebase = { app, auth, db, storage };
-            
-            console.log('🔥 Firebase initialized successfully!');
-            console.log('⚠️ Using demo configuration - replace with your actual Firebase config');
-        } catch (error) {
-            console.error('❌ Firebase initialization failed:', error);
-            console.log('💡 You can continue developing without Firebase for now');
-            
-            // Create mock Firebase objects for development
-            window.firebase = {
-                auth: null,
-                db: null,
-                storage: null,
-                error: error.message
-            };
-        }
-    </script>
 </head>
 <body>
-    <div class="container">
-        <!-- Top Section -->
-        <header class="header">
-            <h1 class="main-title">Step Beyond the Ordinary</h1>
-            <nav class="nav-pills">
-                <span class="pill">Portal</span>
-                <span class="dot">•</span>
-                <span class="pill">Flow State</span>
-                <span class="dot">•</span>
-                <span class="pill">Limitless Canvas</span>
-                <span class="dot">•</span>
-                <span class="pill">Cloud collaboration</span>
-            </nav>
-        </header>
-
-        <!-- Abstract Graphic Section -->
-        <main class="main-content">
-            <div class="abstract-graphic">
-                <div class="portal-structure"></div>
-                <div class="flowing-material"></div>
-                <div class="clouds">
-                    <div class="cloud cloud-1"></div>
-                    <div class="cloud cloud-2"></div>
-                    <div class="cloud cloud-3"></div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Bottom Section -->
-        <footer class="footer">
-            <div class="description">
-                <p>The single platform to<br>
-                iterate, evaluate, deploy,<br>
-                and monitor LLMs</p>
-            </div>
-            <button class="explore-btn">
-                Explore the portal
-                <span class="arrow">→</span>
-            </button>
-        </footer>
-    </div>
+    <button class="explore-btn" onclick="window.open('portal.html', '_blank')">
+        Explore the portal
+        <span class="arrow-icon">→</span>
+    </button>
 </body>
 </html>
