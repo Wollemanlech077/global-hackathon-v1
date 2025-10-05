@@ -1094,6 +1094,21 @@ export default function MapPage() {
         </div>
       )}
       
+      {/* Portal button - positioned like in main page */}
+      <div 
+        style={{
+          position: 'fixed',
+          bottom: '0px',
+          right: '-25px',
+          zIndex: 9999
+        }}
+      >
+        <button className="portal-button" onClick={() => router.push('/')}>
+          <span className="button-text">Back to Portal</span>
+          <span className="arrow-circle">←</span>
+        </button>
+      </div>
+
       {/* Map controls */}
       {mapLoaded && (
         <div className="map-controls-container">
