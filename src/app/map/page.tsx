@@ -43,6 +43,17 @@ export default function MapPage() {
   const [isAddingCrime, setIsAddingCrime] = useState(false)
   const [containerReady, setContainerReady] = useState(false)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Available incident types
   const incidentTypes = [
@@ -1099,17 +1110,21 @@ export default function MapPage() {
       <div 
         style={{
           position: 'fixed',
-          bottom: '0px',
-          right: '-25px',
+          bottom: isMobile ? 'auto' : '0px',
+          top: isMobile ? '15px' : 'auto',
+          right: isMobile ? 'auto' : '-25px',
+          left: isMobile ? '15px' : 'auto',
           zIndex: 9999
         }}
       >
         <button className="portal-button" onClick={() => router.push('/')} style={{
           background: 'rgba(100, 116, 139, 0.85)',
           backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)'
+          WebkitBackdropFilter: 'blur(20px)',
+          fontSize: isMobile ? '0.875rem' : '1rem',
+          padding: isMobile ? '0.5rem 1rem' : '0.625rem 1.5rem'
         }}>
-          <span className="button-text">Back to Portal</span>
+          <span className="button-text">{isMobile ? 'Back' : 'Back to Portal'}</span>
           <span className="arrow-circle">←</span>
         </button>
       </div>
@@ -1244,19 +1259,23 @@ export default function MapPage() {
       {/* City search - Global */}
       <div style={{ 
         position: 'absolute', 
-        bottom: '0px', 
-        left: '0px', 
+        bottom: '0px',
+        left: isMobile ? '50%' : '0px',
+        transform: isMobile ? 'translateX(-50%)' : 'none',
         zIndex: 9999,
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
+        borderTopLeftRadius: '12px',
         borderTopRightRadius: '12px',
+        borderBottomLeftRadius: '0',
+        borderBottomRightRadius: '0',
         padding: '10px',
         boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06)',
         border: '1px solid rgba(255, 255, 255, 0.2)',
-        width: '240px',
+        width: isMobile ? 'calc(100% - 2rem)' : '240px',
+        maxWidth: isMobile ? '100%' : '240px',
         fontFamily: 'system-ui, -apple-system, sans-serif',
-        transform: 'translateY(0)',
         transition: 'all 0.3s ease'
       }}>
         {dynamicCities.length > 0 && (

@@ -20,7 +20,18 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [user, setUser] = useState<any>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
+
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Escuchar cambios en el estado de autenticación
   useEffect(() => {
@@ -171,8 +182,8 @@ export default function AuthPage() {
       {/* Logo */}
       <div style={{
         position: 'absolute',
-        top: '30px',
-        left: '30px',
+        top: isMobile ? '15px' : '30px',
+        left: isMobile ? '15px' : '30px',
         zIndex: 10,
         cursor: 'pointer'
       }}
@@ -181,8 +192,8 @@ export default function AuthPage() {
         <Image
           src="/logo.png"
           alt="Logo"
-          width={48}
-          height={48}
+          width={isMobile ? 36 : 48}
+          height={isMobile ? 36 : 48}
           style={{
             filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
             transition: 'transform 0.2s ease'
@@ -198,14 +209,24 @@ export default function AuthPage() {
 
       {/* Bottom Section */}
       {!showLoginModal && !showRegisterModal && (
-        <div className="flex justify-center items-center pb-20">
-          <div className="flex gap-4">
-            <button className="portal-button" onClick={openLoginModal}>
+        <div className="flex justify-center items-center" style={{
+          paddingBottom: isMobile ? '3rem' : '5rem'
+        }}>
+          <div className="flex gap-4" style={{
+            flexDirection: isMobile ? 'column' : 'row',
+            width: isMobile ? '100%' : 'auto',
+            padding: isMobile ? '0 2rem' : '0'
+          }}>
+            <button className="portal-button" onClick={openLoginModal} style={{
+              width: isMobile ? '100%' : 'auto'
+            }}>
               <span className="button-text">Sign In</span>
               <span className="arrow-circle">→</span>
             </button>
             
-            <button className="portal-button" onClick={openRegisterModal}>
+            <button className="portal-button" onClick={openRegisterModal} style={{
+              width: isMobile ? '100%' : 'auto'
+            }}>
               <span className="button-text">Create Account</span>
               <span className="arrow-circle">+</span>
             </button>
@@ -240,9 +261,9 @@ export default function AuthPage() {
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '20px',
+              borderRadius: isMobile ? '16px' : '20px',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 16px 48px rgba(0, 0, 0, 0.2)',
-              width: '420px',
+              width: isMobile ? '90%' : '420px',
               maxWidth: '100%',
               maxHeight: '80vh',
               overflowY: 'auto' as const,
@@ -251,7 +272,9 @@ export default function AuthPage() {
             }}
           >
             <div className="auth-modal-header">
-              <h2 className="auth-modal-title">Sign In</h2>
+              <h2 className="auth-modal-title" style={{
+                fontSize: isMobile ? '1.5rem' : '1.75rem'
+              }}>Sign In</h2>
               <button
                 onClick={closeModals}
                 className="auth-modal-close"
@@ -345,9 +368,9 @@ export default function AuthPage() {
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '20px',
+              borderRadius: isMobile ? '16px' : '20px',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 16px 48px rgba(0, 0, 0, 0.2)',
-              width: '420px',
+              width: isMobile ? '90%' : '420px',
               maxWidth: '100%',
               maxHeight: '80vh',
               overflowY: 'auto' as const,
@@ -356,7 +379,9 @@ export default function AuthPage() {
             }}
           >
             <div className="auth-modal-header">
-              <h2 className="auth-modal-title">Create Account</h2>
+              <h2 className="auth-modal-title" style={{
+                fontSize: isMobile ? '1.5rem' : '1.75rem'
+              }}>Create Account</h2>
               <button
                 onClick={closeModals}
                 className="auth-modal-close"

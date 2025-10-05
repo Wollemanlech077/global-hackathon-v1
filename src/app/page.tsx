@@ -9,6 +9,17 @@ export default function Home() {
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null)
   const [isScrolling, setIsScrolling] = useState(false)
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Validación de seguridad: asegurar que scrollPosition siempre esté en rango válido
   useEffect(() => {
@@ -162,16 +173,30 @@ export default function Home() {
       </div>
 
       <div 
-        className="flex justify-start items-end mb-20 px-16"
+        className="flex items-center px-16"
         style={{
           position: 'relative',
           zIndex: 10,
           opacity: scrollPosition === 0 ? 1 : 0,
           transition: 'opacity 0.5s ease',
-          visibility: scrollPosition === 0 ? 'visible' : 'hidden'
+          visibility: scrollPosition === 0 ? 'visible' : 'hidden',
+          marginBottom: isMobile ? '0' : '5rem',
+          paddingLeft: isMobile ? '1.5rem' : '4rem',
+          paddingRight: isMobile ? '1.5rem' : '4rem',
+          justifyContent: isMobile ? 'center' : 'flex-start',
+          height: isMobile ? '60vh' : 'auto'
         }}
       >
-        <p className="hero-title w-1/2">
+        <p style={{
+          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+          fontSize: isMobile ? '1.5rem' : 'clamp(2rem, 5vw, 3.5rem)',
+          fontWeight: '200',
+          lineHeight: '1.4',
+          letterSpacing: '-0.03em',
+          color: '#CBD5E1',
+          width: isMobile ? '100%' : '50%',
+          textAlign: isMobile ? 'center' : 'left'
+        }}>
           The single platform to score, evaluate, monitor, and map risks
         </p>
       </div>
@@ -193,32 +218,34 @@ export default function Home() {
           WebkitBackgroundClip: scrollPosition === 3 ? 'text' : 'none',
           WebkitTextFillColor: scrollPosition === 3 ? 'transparent' : 'inherit',
           backgroundClip: scrollPosition === 3 ? 'text' : 'none',
-          fontSize: '4.5rem',
+          fontSize: isMobile ? (scrollPosition === 2 ? '1.5rem' : '2rem') : '4.5rem',
           fontWeight: '200',
           letterSpacing: '-0.03em',
           lineHeight: '1.1',
           transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
           opacity: 1,
           transform: 'translateY(0)',
-          textShadow: scrollPosition === 3 ? '0 4px 20px rgba(168, 218, 255, 0.3)' : 'none'
+          textShadow: scrollPosition === 3 ? '0 4px 20px rgba(168, 218, 255, 0.3)' : 'none',
+          paddingLeft: isMobile ? '1rem' : '0',
+          paddingRight: isMobile ? '1rem' : '0'
         }}>
-          {scrollPosition === 0 ? 'Beyond the Surface' : scrollPosition === 1 ? 'Data Becomes Sense' : scrollPosition === 2 ? 'Simple, Transparent Pricing' : 'Meet Our Team'}
+          {scrollPosition === 0 ? 'Beyond the Surface' : scrollPosition === 1 ? 'Data Becomes Sense' : scrollPosition === 2 ? (isMobile ? 'Pricing' : 'Simple, Transparent Pricing') : 'Meet Our Team'}
         </h1>
         <div 
           className="subtitle-tags rounded-full backdrop-blur-md border border-white/20 flex items-center" 
           style={{ 
             color: '#CBD5E1',
-            paddingLeft: '2rem',
-            paddingRight: '2rem',
-            paddingTop: '0.875rem',
-            paddingBottom: '0.875rem',
+            paddingLeft: isMobile ? '1rem' : '2rem',
+            paddingRight: isMobile ? '1rem' : '2rem',
+            paddingTop: isMobile ? '0.5rem' : '0.875rem',
+            paddingBottom: isMobile ? '0.5rem' : '0.875rem',
             background: scrollPosition === 3 ? 'linear-gradient(135deg, rgba(168, 218, 255, 0.5), rgba(245, 182, 255, 0.5), rgba(255, 200, 161, 0.5))' : 'rgba(255, 255, 255, 0.12)',
             backdropFilter: scrollPosition === 3 ? 'blur(40px) saturate(180%)' : 'blur(24px)',
             WebkitBackdropFilter: scrollPosition === 3 ? 'blur(40px) saturate(180%)' : 'blur(24px)',
             boxShadow: scrollPosition === 3 ? '0 8px 40px rgba(168, 218, 255, 0.4), 0 4px 20px rgba(245, 182, 255, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.4), inset 0 -2px 10px rgba(255, 255, 255, 0.2)' : '0 8px 32px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1)',
             border: scrollPosition === 3 ? '2px solid rgba(255, 255, 255, 0.5)' : '1px solid rgba(255, 255, 255, 0.2)',
-            gap: '2.5rem',
-            fontSize: '1rem',
+            gap: isMobile ? '0.75rem' : '2.5rem',
+            fontSize: isMobile ? '0.75rem' : '1rem',
             fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
             fontWeight: '200',
             transition: 'all 0.5s ease'
@@ -227,14 +254,14 @@ export default function Home() {
           <span 
             style={{
               background: scrollPosition === 0 ? 'rgba(255, 255, 255, 0.25)' : 'transparent',
-              paddingLeft: '1.5rem',
-              paddingRight: '1.5rem',
-              paddingTop: '0.625rem',
-              paddingBottom: '0.625rem',
+              paddingLeft: isMobile ? '0.75rem' : '1.5rem',
+              paddingRight: isMobile ? '0.75rem' : '1.5rem',
+              paddingTop: isMobile ? '0.4rem' : '0.625rem',
+              paddingBottom: isMobile ? '0.4rem' : '0.625rem',
               borderRadius: '25px',
               color: scrollPosition === 0 ? '#FFFFFF' : (scrollPosition === 3 ? '#334155' : '#CBD5E1'),
               fontWeight: scrollPosition === 0 ? '400' : (scrollPosition === 3 ? '500' : '200'),
-              fontSize: '1rem',
+              fontSize: isMobile ? '0.75rem' : '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
               border: scrollPosition === 0 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
               boxShadow: scrollPosition === 0 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none',
@@ -266,13 +293,13 @@ export default function Home() {
             style={{ 
               color: scrollPosition === 1 ? '#FFFFFF' : (scrollPosition === 3 ? '#334155' : '#CBD5E1'),
               opacity: scrollPosition === 1 ? 1 : (scrollPosition === 3 ? 0.9 : 0.5),
-              fontSize: '1rem',
+              fontSize: isMobile ? '0.75rem' : '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
               fontWeight: scrollPosition === 1 ? '400' : (scrollPosition === 3 ? '500' : '200'),
-              paddingLeft: '1.5rem',
-              paddingRight: '1.5rem',
-              paddingTop: '0.625rem',
-              paddingBottom: '0.625rem',
+              paddingLeft: isMobile ? '0.75rem' : '1.5rem',
+              paddingRight: isMobile ? '0.75rem' : '1.5rem',
+              paddingTop: isMobile ? '0.4rem' : '0.625rem',
+              paddingBottom: isMobile ? '0.4rem' : '0.625rem',
               borderRadius: '25px',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
@@ -302,13 +329,13 @@ export default function Home() {
             style={{ 
               color: scrollPosition === 2 ? '#FFFFFF' : (scrollPosition === 3 ? '#334155' : '#CBD5E1'),
               opacity: scrollPosition === 2 ? 1 : (scrollPosition === 3 ? 0.9 : 0.5),
-              fontSize: '1rem',
+              fontSize: isMobile ? '0.75rem' : '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
               fontWeight: scrollPosition === 2 ? '400' : (scrollPosition === 3 ? '500' : '200'),
-              paddingLeft: '1.5rem',
-              paddingRight: '1.5rem',
-              paddingTop: '0.625rem',
-              paddingBottom: '0.625rem',
+              paddingLeft: isMobile ? '0.75rem' : '1.5rem',
+              paddingRight: isMobile ? '0.75rem' : '1.5rem',
+              paddingTop: isMobile ? '0.4rem' : '0.625rem',
+              paddingBottom: isMobile ? '0.4rem' : '0.625rem',
               borderRadius: '25px',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
@@ -338,13 +365,13 @@ export default function Home() {
             style={{ 
               color: scrollPosition === 3 ? '#334155' : '#CBD5E1',
               opacity: scrollPosition === 3 ? 1 : 0.5,
-              fontSize: '1rem',
+              fontSize: isMobile ? '0.75rem' : '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
               fontWeight: scrollPosition === 3 ? '600' : '200',
-              paddingLeft: '1.5rem',
-              paddingRight: '1.5rem',
-              paddingTop: '0.625rem',
-              paddingBottom: '0.625rem',
+              paddingLeft: isMobile ? '0.75rem' : '1.5rem',
+              paddingRight: isMobile ? '0.75rem' : '1.5rem',
+              paddingTop: isMobile ? '0.4rem' : '0.625rem',
+              paddingBottom: isMobile ? '0.4rem' : '0.625rem',
               borderRadius: '25px',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
@@ -375,8 +402,8 @@ export default function Home() {
       <div 
         style={{
           position: 'fixed',
-          top: '30px',
-          left: '30px',
+          top: isMobile ? '15px' : '30px',
+          left: isMobile ? '15px' : '30px',
           zIndex: 9999,
           cursor: 'pointer'
         }}
@@ -390,8 +417,8 @@ export default function Home() {
         <Image 
           src="/logo.png" 
           alt="Logo" 
-          width={48}
-          height={48}
+          width={isMobile ? 36 : 48}
+          height={isMobile ? 36 : 48}
           style={{
             filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
             transition: 'transform 0.2s ease'
@@ -452,30 +479,32 @@ export default function Home() {
       >
         <div style={{
           position: 'absolute',
-          left: '30px',
-          top: '230px',
+          left: isMobile ? '20px' : '30px',
+          right: isMobile ? '20px' : 'auto',
+          top: isMobile ? '180px' : '230px',
           maxWidth: '1400px',
           zIndex: 51
         }}>
           <h2 style={{
-            fontSize: '4rem',
+            fontSize: isMobile ? '1.5rem' : '4rem',
             fontWeight: '200',
             color: '#CBD5E1',
-            lineHeight: '1.0',
+            lineHeight: '1.2',
             letterSpacing: '-0.03em',
             fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-            marginBottom: '4rem'
+            marginBottom: isMobile ? '2rem' : '4rem'
           }}>
-            Aether transforms geospatial data<br />
-            into live, contextual intelligence<br />
+            Aether transforms geospatial data{!isMobile && <br />}
+            into live, contextual intelligence{!isMobile && <br />}
             ready to integrate anywhere.
           </h2>
           
           {/* Iconos con descripciones */}
           <div style={{
             display: 'flex',
-            gap: '3rem',
-            marginTop: '3rem',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: isMobile ? '2rem' : '3rem',
+            marginTop: isMobile ? '2rem' : '3rem',
             justifyContent: 'center',
             alignItems: 'center'
           }}>
@@ -489,8 +518,8 @@ export default function Home() {
               <Image
                 src="/graphic.png"
                 alt="Living Data"
-                width={240}
-                height={240}
+                width={isMobile ? 120 : 240}
+                height={isMobile ? 120 : 240}
                 style={{
                   objectFit: 'contain',
                   cursor: 'pointer',
@@ -549,8 +578,8 @@ export default function Home() {
               <Image
                 src="/build.png"
                 alt="Adaptive Systems"
-                width={240}
-                height={240}
+                width={isMobile ? 120 : 240}
+                height={isMobile ? 120 : 240}
                 style={{
                   objectFit: 'contain',
                   cursor: 'pointer',
@@ -609,8 +638,8 @@ export default function Home() {
               <Image
                 src="/arm.png"
                 alt="Modular Design"
-                width={240}
-                height={240}
+                width={isMobile ? 120 : 240}
+                height={isMobile ? 120 : 240}
                 style={{
                   objectFit: 'contain',
                   cursor: 'pointer',
@@ -682,23 +711,27 @@ export default function Home() {
         <div style={{
           maxWidth: '1400px',
           width: '100%',
-          padding: '0 40px'
+          padding: isMobile ? '0 20px' : '0 40px',
+          overflow: isMobile ? 'auto' : 'visible',
+          maxHeight: isMobile ? '100vh' : 'auto'
         }}>
           {/* Pricing Bubbles */}
               <div style={{
                 display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
                 justifyContent: 'center',
                 alignItems: 'center',
-                gap: '1.5rem',
+                gap: isMobile ? '2rem' : '1.5rem',
                 position: 'relative',
-                marginTop: '8rem'
+                marginTop: isMobile ? '10rem' : '8rem',
+                paddingBottom: isMobile ? '2rem' : '0'
               }}>
             {/* Starter Bubble */}
             <div 
                 onClick={() => setExpandedPlan(expandedPlan === 'starter' ? null : 'starter')}
                 style={{
-                  width: expandedPlan === 'starter' ? '260px' : '180px',
-                  height: expandedPlan === 'starter' ? '340px' : '180px',
+                  width: expandedPlan === 'starter' ? (isMobile ? '280px' : '260px') : (isMobile ? '140px' : '180px'),
+                  height: expandedPlan === 'starter' ? (isMobile ? '360px' : '340px') : (isMobile ? '140px' : '180px'),
                 borderRadius: expandedPlan === 'starter' ? '30px' : '50%',
                 background: 'rgba(255, 255, 255, 0.12)',
                 backdropFilter: 'blur(30px)',
@@ -828,8 +861,8 @@ export default function Home() {
             <div 
               onClick={() => setExpandedPlan(expandedPlan === 'professional' ? null : 'professional')}
               style={{
-                width: expandedPlan === 'professional' ? '270px' : '220px',
-                height: expandedPlan === 'professional' ? '390px' : '220px',
+                width: expandedPlan === 'professional' ? (isMobile ? '290px' : '270px') : (isMobile ? '160px' : '220px'),
+                height: expandedPlan === 'professional' ? (isMobile ? '410px' : '390px') : (isMobile ? '160px' : '220px'),
                 borderRadius: expandedPlan === 'professional' ? '30px' : '50%',
                 background: 'rgba(255, 255, 255, 0.18)',
                 backdropFilter: 'blur(30px)',
@@ -996,8 +1029,8 @@ export default function Home() {
             <div 
               onClick={() => setExpandedPlan(expandedPlan === 'enterprise' ? null : 'enterprise')}
               style={{
-                width: expandedPlan === 'enterprise' ? '260px' : '180px',
-                height: expandedPlan === 'enterprise' ? '380px' : '180px',
+                width: expandedPlan === 'enterprise' ? (isMobile ? '280px' : '260px') : (isMobile ? '140px' : '180px'),
+                height: expandedPlan === 'enterprise' ? (isMobile ? '400px' : '380px') : (isMobile ? '140px' : '180px'),
                 borderRadius: expandedPlan === 'enterprise' ? '30px' : '50%',
                 background: 'rgba(255, 255, 255, 0.12)',
                 backdropFilter: 'blur(30px)',
@@ -1140,154 +1173,35 @@ export default function Home() {
           boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.1)',
           zIndex: 70,
           pointerEvents: scrollPosition === 3 ? 'auto' : 'none',
-          overflow: 'visible'
+          overflow: isMobile ? 'auto' : 'visible'
         }}
       >
         <div style={{
           maxWidth: '1400px',
           width: '100%',
-          padding: '0 40px',
-          overflow: 'visible',
-          height: '100%'
+          padding: isMobile ? '0 20px' : '0 40px',
+          height: isMobile ? 'auto' : '100%'
         }}>
           {/* Team Members */}
           <div style={{
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
+            flexDirection: isMobile ? 'column' : 'row',
+            justifyContent: isMobile ? 'center' : 'space-between',
+            alignItems: isMobile ? 'center' : 'flex-start',
             marginTop: '2rem',
-            paddingLeft: '4rem',
-            paddingRight: '4rem',
-            paddingBottom: '4rem',
-            minHeight: 'calc(100vh - 4rem)'
+            paddingLeft: isMobile ? '1rem' : '4rem',
+            paddingRight: isMobile ? '1rem' : '4rem',
+            paddingBottom: isMobile ? '4rem' : '4rem',
+            minHeight: isMobile ? 'auto' : 'calc(100vh - 4rem)',
+            gap: isMobile ? '3rem' : '0'
           }}>
-            {/* Team Member 1 - Carlos */}
+            {/* Team Member 1 - Arturo */}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              marginTop: '20rem'
-            }}>
-                  {/* Avatar Circle */}
-                  <div style={{
-                    width: '120px',
-                    height: '120px',
-                    borderRadius: '50%',
-                    border: '3px solid rgba(71, 85, 105, 0.25)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '1.5rem',
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5)',
-                    overflow: 'hidden'
-                  }}>
-                    <Image 
-                      src="/carlos.jpeg" 
-                      alt="Carlos Zendejas" 
-                      width={120}
-                      height={120}
-                      style={{
-                        objectFit: 'cover',
-                        width: '100%',
-                        height: '100%',
-                        objectPosition: 'center 60%'
-                      }}
-                    />
-                  </div>
-                  <h3 style={{
-                    fontSize: '1.5rem',
-                    fontWeight: '300',
-                    color: '#1E293B',
-                    marginBottom: '0.5rem',
-                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                    textShadow: 'none'
-                  }}>Carlos Zendejas</h3>
-                  
-                  {/* Social Icons */}
-                  <div style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    marginTop: '0.75rem',
-                    alignItems: 'center'
-                  }}>
-                    <a href="https://www.instagram.com/carlos5658/" target="_blank" rel="noopener noreferrer" style={{
-                      transition: 'all 0.3s ease',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }} onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'scale(1.2)';
-                    }} onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
-                    }}>
-                      <Image 
-                        src="/instagram.jpg" 
-                        alt="Instagram" 
-                        width={50}
-                        height={50}
-                        style={{
-                          objectFit: 'contain'
-                        }}
-                      />
-                    </a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" style={{
-                      transition: 'all 0.3s ease',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }} onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'scale(1.2)';
-                    }} onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
-                    }}>
-                      <Image 
-                        src="/linkedin.jpg" 
-                        alt="LinkedIn" 
-                        width={28}
-                        height={28}
-                        style={{
-                          objectFit: 'contain'
-                        }}
-                      />
-                    </a>
-                  </div>
-            </div>
-
-            {/* Video en el medio */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              justifyContent: 'center',
-              maxWidth: '450px',
-              width: '100%',
-              marginTop: '20rem'
-            }}>
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                style={{
-                  width: '100%',
-                  maxWidth: '320px',
-                  height: 'auto',
-                  borderRadius: '12px',
-                  boxShadow: 'none',
-                  border: 'none',
-                  objectFit: 'contain'
-                }}
-              >
-                <source src="/video.mov" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
-
-            {/* Team Member 2 - Arturo */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              marginTop: '20rem'
+              marginTop: isMobile ? '6rem' : '20rem'
             }}>
                   {/* Avatar Circle */}
                   <div style={{
@@ -1351,6 +1265,126 @@ export default function Home() {
                       />
                     </a>
                     <a href="https://www.linkedin.com/in/arturo-o-41371424a/" target="_blank" rel="noopener noreferrer" style={{
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }} onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.2)';
+                    }} onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}>
+                      <Image 
+                        src="/linkedin.jpg" 
+                        alt="LinkedIn" 
+                        width={28}
+                        height={28}
+                        style={{
+                          objectFit: 'contain'
+                        }}
+                      />
+                    </a>
+                  </div>
+            </div>
+
+            {/* Video en el medio */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'center',
+              maxWidth: isMobile ? '280px' : '450px',
+              width: '100%',
+              marginTop: isMobile ? '0' : '20rem'
+            }}>
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={{
+                  width: '100%',
+                  maxWidth: isMobile ? '240px' : '320px',
+                  height: 'auto',
+                  borderRadius: '12px',
+                  boxShadow: 'none',
+                  border: 'none',
+                  objectFit: 'contain'
+                }}
+              >
+                <source src="/video.mov" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+
+            {/* Team Member 2 - Carlos */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              marginTop: isMobile ? '0' : '20rem'
+            }}>
+                  {/* Avatar Circle */}
+                  <div style={{
+                    width: '120px',
+                    height: '120px',
+                    borderRadius: '50%',
+                    border: '3px solid rgba(71, 85, 105, 0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '1.5rem',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5)',
+                    overflow: 'hidden'
+                  }}>
+                    <Image 
+                      src="/carlos.jpeg" 
+                      alt="Carlos Zendejas" 
+                      width={120}
+                      height={120}
+                      style={{
+                        objectFit: 'cover',
+                        width: '100%',
+                        height: '100%',
+                        objectPosition: 'center 60%'
+                      }}
+                    />
+                  </div>
+                  <h3 style={{
+                    fontSize: '1.5rem',
+                    fontWeight: '300',
+                    color: '#1E293B',
+                    marginBottom: '0.5rem',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                    textShadow: 'none'
+                  }}>Carlos Zendejas</h3>
+                  
+                  {/* Social Icons */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '1rem',
+                    marginTop: '0.75rem',
+                    alignItems: 'center'
+                  }}>
+                    <a href="https://www.instagram.com/carlos5658/" target="_blank" rel="noopener noreferrer" style={{
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }} onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.2)';
+                    }} onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}>
+                      <Image 
+                        src="/instagram.jpg" 
+                        alt="Instagram" 
+                        width={50}
+                        height={50}
+                        style={{
+                          objectFit: 'contain'
+                        }}
+                      />
+                    </a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" style={{
                       transition: 'all 0.3s ease',
                       display: 'flex',
                       alignItems: 'center'
