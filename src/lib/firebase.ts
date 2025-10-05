@@ -4,6 +4,23 @@ import { getAnalytics } from "firebase/analytics";
 import { getFirestore, collection, getDocs, addDoc, doc, setDoc, deleteDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
+// Type definitions
+interface CrimePoint {
+  id: string;
+  intensity?: number;
+  risk?: string;
+  crimes?: number;
+  city?: string;
+  incident?: string;
+  date?: string;
+  details?: string;
+  country?: string;
+  coordinates?: [number, number];
+  longitude?: number;
+  latitude?: number;
+  [key: string]: any;
+}
+
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyD_KrwxHAOzZPAFwhhiZ3WTE7cOQslkhMw",
@@ -71,14 +88,14 @@ export const updateHeatPoint = async (id: string, heatPointData: any) => {
 };
 
 // Funciones para manejar datos de puntos de crimen
-export const getCrimePoints = async () => {
+export const getCrimePoints = async (): Promise<CrimePoint[]> => {
   try {
     const crimePointsCollection = collection(db, 'crimePoints');
     const snapshot = await getDocs(crimePointsCollection);
     const crimePoints = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    } as CrimePoint));
     return crimePoints;
   } catch (error) {
     return [];
