@@ -117,7 +117,7 @@ export default function Home() {
         >
           <span 
             style={{
-              background: 'rgba(255, 255, 255, 0.2)',
+              background: scrolled ? 'transparent' : 'rgba(255, 255, 255, 0.2)',
               paddingLeft: '1.5rem',
               paddingRight: '1.5rem',
               paddingTop: '0.625rem',
@@ -127,9 +127,13 @@ export default function Home() {
               fontWeight: '200',
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              border: scrolled ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: scrolled ? 'none' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+              opacity: scrolled ? 0.7 : 1,
+              transition: 'all 0.3s ease',
+              cursor: 'pointer'
             }}
+            onClick={() => setScrolled(false)}
           >
             Aether
           </span>
@@ -137,27 +141,35 @@ export default function Home() {
             className="nav-item"
             style={{ 
               color: '#CBD5E1', 
-              opacity: 0.7,
+              opacity: scrolled ? 1 : 0.7,
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
               fontWeight: '200',
-              paddingLeft: '1rem',
-              paddingRight: '1rem',
-              paddingTop: '0.5rem',
-              paddingBottom: '0.5rem',
-              borderRadius: '20px',
+              paddingLeft: '1.5rem',
+              paddingRight: '1.5rem',
+              paddingTop: '0.625rem',
+              paddingBottom: '0.625rem',
+              borderRadius: '25px',
               cursor: 'pointer',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              background: scrolled ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+              border: scrolled ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
+              boxShadow: scrolled ? '0 2px 8px rgba(0, 0, 0, 0.1)' : 'none'
             }}
+            onClick={() => setScrolled(true)}
             onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-              e.target.style.opacity = '0.9';
-              e.target.style.transform = 'translateY(-1px)';
+              if (!scrolled) {
+                e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                e.target.style.opacity = '0.9';
+                e.target.style.transform = 'translateY(-1px)';
+              }
             }}
             onMouseLeave={(e) => {
-              e.target.style.background = 'transparent';
-              e.target.style.opacity = '0.7';
-              e.target.style.transform = 'translateY(0)';
+              if (!scrolled) {
+                e.target.style.background = 'transparent';
+                e.target.style.opacity = '0.7';
+                e.target.style.transform = 'translateY(0)';
+              }
             }}
           >API</span>
           <span 
@@ -226,7 +238,14 @@ export default function Home() {
           zIndex: 9999,
           cursor: 'pointer'
         }}
-        onClick={() => router.push('/')}
+        onClick={() => {
+          // Transición suave primero
+          setScrolled(false)
+          // Esperar el tiempo completo de la animación (1.5s) antes de navegar
+          setTimeout(() => {
+            router.push('/')
+          }, 1500)
+        }}
       >
         <Image 
           src="/logo.png" 
@@ -251,8 +270,8 @@ export default function Home() {
       <div 
         style={{
           position: 'fixed',
-          bottom: '80px',
-          right: '64px',
+          bottom: '0px',
+          right: '-25px',
           zIndex: 9999
         }}
       >
@@ -271,7 +290,7 @@ export default function Home() {
           left: 0,
           right: 0,
           transform: scrolled ? 'translateY(0)' : 'translateY(100vh)',
-          transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'transform 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
           background: 'rgba(255, 255, 255, 0.08)',
           backdropFilter: 'blur(40px)',
           WebkitBackdropFilter: 'blur(40px)',
@@ -280,11 +299,26 @@ export default function Home() {
           zIndex: 50
         }}
       >
-        {/* Contenido vacío - solo efecto blur */}
+        {/* Texto grande en la izquierda */}
         <div style={{
-          width: '100%',
-          height: '100%'
+          position: 'absolute',
+          left: '30px',
+          top: '230px',
+          maxWidth: '1400px',
+          zIndex: 51
         }}>
+          <h2 style={{
+            fontSize: '4rem',
+            fontWeight: '200',
+            color: '#CBD5E1',
+            lineHeight: '1.0',
+            letterSpacing: '-0.03em',
+            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
+          }}>
+            Aether transforms geospatial data<br />
+            into live, contextual intelligence<br />
+            ready to integrate anywhere.
+          </h2>
         </div>
       </div>
     </div>
