@@ -20,7 +20,6 @@ const requiredConfigKeys = ['apiKey', 'authDomain', 'projectId', 'storageBucket'
 const missingKeys = requiredConfigKeys.filter(key => !firebaseConfig[key as keyof typeof firebaseConfig]);
 
 if (missingKeys.length > 0) {
-  console.error('Firebase configuration missing:', missingKeys);
   throw new Error(`Firebase configuration is missing required keys: ${missingKeys.join(', ')}`);
 }
 
@@ -28,9 +27,7 @@ if (missingKeys.length > 0) {
 let app;
 try {
   app = initializeApp(firebaseConfig);
-  console.log('Firebase initialized successfully');
 } catch (error) {
-  console.error('Error initializing Firebase:', error);
   throw error;
 }
 
@@ -50,7 +47,6 @@ export const getHeatPoints = async () => {
     }));
     return heatPoints;
   } catch (error) {
-    console.error('Error getting heat points:', error);
     return [];
   }
 };
@@ -61,7 +57,6 @@ export const addHeatPoint = async (heatPointData: any) => {
     const docRef = await addDoc(heatPointsCollection, heatPointData);
     return docRef.id;
   } catch (error) {
-    console.error('Error adding heat point:', error);
     throw error;
   }
 };
@@ -71,7 +66,6 @@ export const updateHeatPoint = async (id: string, heatPointData: any) => {
     const heatPointDoc = doc(db, 'heatPoints', id);
     await setDoc(heatPointDoc, heatPointData, { merge: true });
   } catch (error) {
-    console.error('Error updating heat point:', error);
     throw error;
   }
 };
@@ -87,7 +81,6 @@ export const getCrimePoints = async () => {
     }));
     return crimePoints;
   } catch (error) {
-    console.error('Error getting crime points:', error);
     return [];
   }
 };
@@ -120,7 +113,6 @@ export const getCrimePointsAsGeoJSON = async () => {
     
     return geoJSONData;
   } catch (error) {
-    console.error('Error getting crime points as GeoJSON:', error);
     return {
       type: "FeatureCollection",
       features: []
@@ -138,7 +130,6 @@ export const addCrimePoint = async (crimePointData: any) => {
     });
     return docRef.id;
   } catch (error) {
-    console.error('Error adding crime point:', error);
     throw error;
   }
 };
@@ -151,7 +142,6 @@ export const updateCrimePoint = async (id: string, crimePointData: any) => {
       updatedAt: new Date().toISOString()
     }, { merge: true });
   } catch (error) {
-    console.error('Error updating crime point:', error);
     throw error;
   }
 };
@@ -161,7 +151,6 @@ export const deleteCrimePoint = async (id: string) => {
     const crimePointDoc = doc(db, 'crimePoints', id);
     await deleteDoc(crimePointDoc);
   } catch (error) {
-    console.error('Error deleting crime point:', error);
     throw error;
   }
 };

@@ -37,6 +37,7 @@ export default function AuthPage() {
     return () => unsubscribe()
   }, [router])
 
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -46,7 +47,6 @@ export default function AuthPage() {
       await signInWithEmailAndPassword(auth, email, password)
       // La redirección se maneja en el useEffect
     } catch (error: any) {
-      console.error('Error signing in:', error)
       
       // Manejar errores específicos de Firebase
       let errorMessage = 'Error al iniciar sesión: '
@@ -85,6 +85,7 @@ export default function AuthPage() {
     setLoading(true)
     setError('')
 
+    // Validar que las contraseñas coincidan
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden')
       setLoading(false)
@@ -101,7 +102,6 @@ export default function AuthPage() {
       await createUserWithEmailAndPassword(auth, email, password)
       // La redirección se maneja en el useEffect
     } catch (error: any) {
-      console.error('Error creating account:', error)
       
       // Manejar errores específicos de Firebase
       let errorMessage = 'Error al crear la cuenta: '
@@ -114,7 +114,7 @@ export default function AuthPage() {
           errorMessage += 'Correo electrónico inválido'
           break
         case 'auth/weak-password':
-          errorMessage += 'La contraseña es muy débil'
+          errorMessage += 'La contraseña no cumple con los requisitos de seguridad'
           break
         case 'auth/configuration-not-found':
           errorMessage += 'Configuración de Firebase no encontrada. Por favor, verifica la configuración.'
@@ -136,7 +136,7 @@ export default function AuthPage() {
     try {
       await signOut(auth)
     } catch (error) {
-      console.error('Error al cerrar sesión:', error)
+      // Error silencioso
     }
   }
 
@@ -394,9 +394,10 @@ export default function AuthPage() {
                   className="auth-input"
                   placeholder="••••••••"
                   required
-                  minLength={6}
+                  minLength={8}
                   disabled={loading}
                 />
+                
               </div>
 
               <div className="auth-input-group">
@@ -408,15 +409,25 @@ export default function AuthPage() {
                   className="auth-input"
                   placeholder="••••••••"
                   required
-                  minLength={6}
+                  minLength={8}
                   disabled={loading}
                 />
+                
+                {/* Indicador elegante de coincidencia de contraseñas */}
+                {confirmPassword && password && (
+                  <div className={`password-match-indicator ${password === confirmPassword ? 'match' : 'no-match'}`}>
+                    <span className="password-match-icon">
+                      {password === confirmPassword ? '✓' : '✗'}
+                    </span>
+                    {password === confirmPassword ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden'}
+                  </div>
+                )}
               </div>
 
               <button
                 type="submit"
                 className="auth-submit-button"
-                disabled={loading}
+                disabled={loading || password !== confirmPassword}
               >
                 {loading ? 'Creating account...' : 'Create Account'}
               </button>

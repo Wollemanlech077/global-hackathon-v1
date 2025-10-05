@@ -6,7 +6,6 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import { getCrimePointsAsGeoJSON, addCrimePoint, auth } from '@/lib/firebase'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
-// Sistema completamente basado en Firebase - sin datos estáticos
 
 export default function MapPage() {
   const mapContainer = useRef<HTMLDivElement>(null)
@@ -16,6 +15,7 @@ export default function MapPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+
   const [canZoomIn, setCanZoomIn] = useState(true)
   const [canZoomOut, setCanZoomOut] = useState(true)
   const [isLocating, setIsLocating] = useState(false)
@@ -25,7 +25,10 @@ export default function MapPage() {
   const [showSearchResults, setShowSearchResults] = useState(false)
   const [crimeDataFromFirebase, setCrimeDataFromFirebase] = useState<any>(null)
   const [firebaseLoading, setFirebaseLoading] = useState(false)
+  const [firebaseError, setFirebaseError] = useState<string | null>(null)
   const [dynamicCities, setDynamicCities] = useState<any[]>([])
+  const [dataLastLoaded, setDataLastLoaded] = useState<number | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
   const [showAddCrimeModal, setShowAddCrimeModal] = useState(false)
   const [newCrimePoint, setNewCrimePoint] = useState({
     city: '',
@@ -136,7 +139,6 @@ export default function MapPage() {
     { name: "Salzgitter", coordinates: [10.3267, 52.1508], state: "Lower Saxony" }
   ]
 
-  // Datos estáticos eliminados - ahora usamos solo Firebase
 
   // Función para obtener país desde coordenadas (geocodificación inversa)
   const getCountryFromCoordinates = async (latitude: number, longitude: number): Promise<string> => {
@@ -152,7 +154,6 @@ export default function MapPage() {
       const data = await response.json()
       return data.countryName || 'Unknown Country'
     } catch (error) {
-      console.error('Error getting country from coordinates:', error)
       return 'Unknown Country'
     }
   }
@@ -177,7 +178,7 @@ export default function MapPage() {
           try {
             country = await getCountryFromCoordinates(coordinates[1], coordinates[0])
           } catch (error) {
-            console.error('Error getting country for coordinates:', coordinates, error)
+            // console.error('Error getting country for coordinates:', coordinates, error)
             country = 'Unknown Country'
           }
         }
@@ -213,61 +214,64 @@ export default function MapPage() {
     // Convertir Map a Array y ordenar por número de crímenes (descendente)
     const uniqueCities = Array.from(cityMap.values()).sort((a, b) => b.crimeCount - a.crimeCount)
     
-    console.log('🏙️ Ciudades únicas extraídas:', uniqueCities.length)
+    // console.log('🏙️ Ciudades únicas extraídas:', uniqueCities.length)
     return uniqueCities
   }
 
-  // Función para cargar datos de Firebase - MEJORADA
-  const loadCrimeDataFromFirebase = async () => {
-    console.log('🔄 Iniciando carga de datos de Firebase...')
+  // Función para cargar datos de Firebase con caché y retry inteligente
+  const loadCrimeDataFromFirebase = async (forceReload = false) => {
+    // Verificar caché (datos válidos por 5 minutos)
+    const CACHE_DURATION = 5 * 60 * 1000 // 5 minutos
+    const now = Date.now()
+    
+    if (!forceReload && 
+        crimeDataFromFirebase && 
+        dataLastLoaded && 
+        (now - dataLastLoaded) < CACHE_DURATION) {
+      return // Usar datos en caché
+    }
+
     setFirebaseLoading(true)
+    setFirebaseError(null)
     
     try {
       const firebaseData = await getCrimePointsAsGeoJSON()
-      console.log('📊 Datos recibidos de Firebase:', firebaseData)
       
       if (firebaseData && firebaseData.features && firebaseData.features.length > 0) {
-        console.log('✅ Datos cargados desde Firebase:', firebaseData.features.length, 'puntos')
         setCrimeDataFromFirebase(firebaseData)
+        setDataLastLoaded(now)
+        setRetryCount(0) // Reset retry count on success
         
         // Extraer ciudades únicas para la búsqueda dinámica
         const cities = await extractUniqueCities(firebaseData)
         setDynamicCities(cities)
         
-        // Forzar actualización del mapa si está listo
+        // Actualizar mapa si está listo
         if (map.current && map.current.isStyleLoaded()) {
-          console.log('🔄 Forzando actualización del mapa...')
           setTimeout(() => {
             addHeatmapLayers()
-          }, 300)
+          }, 100)
         }
       } else {
-        console.log('⚠️ No hay datos en Firebase disponibles')
         setCrimeDataFromFirebase(null)
         setDynamicCities([])
+        setFirebaseError('No hay datos disponibles')
       }
     } catch (error) {
-      console.error('❌ Error cargando datos de Firebase:', error)
-      setCrimeDataFromFirebase(null)
-      setDynamicCities([])
+      const errorMessage = 'Error cargando datos. '
+      setFirebaseError(errorMessage)
       
-      // Reintentar después de un delay
-      setTimeout(async () => {
-        console.log('🔄 Reintentando carga de datos de Firebase...')
-        try {
-          const retryData = await getCrimePointsAsGeoJSON()
-          if (retryData && retryData.features && retryData.features.length > 0) {
-            console.log('✅ Datos cargados en reintento:', retryData.features.length, 'puntos')
-            setCrimeDataFromFirebase(retryData)
-            
-            // Extraer ciudades únicas para la búsqueda dinámica
-            const cities = await extractUniqueCities(retryData)
-            setDynamicCities(cities)
-          }
-        } catch (retryError) {
-          console.error('❌ Error en reintento:', retryError)
-        }
-      }, 2000)
+      // Retry inteligente con backoff exponencial
+      if (retryCount < 3) {
+        const delay = Math.pow(2, retryCount) * 1000 // 1s, 2s, 4s
+        setRetryCount(prev => prev + 1)
+        
+        setTimeout(() => {
+          loadCrimeDataFromFirebase(true)
+        }, delay)
+      } else {
+        setFirebaseError(errorMessage + 'Máximo de reintentos alcanzado.')
+      }
     } finally {
       setFirebaseLoading(false)
     }
@@ -307,7 +311,7 @@ export default function MapPage() {
         date: new Date().toISOString().split('T')[0] // Today's date
       })
     } catch (error) {
-      console.error('Error getting location:', error)
+      // console.error('Error getting location:', error)
       // If location fails, still open modal but with default values
       setNewCrimePoint({
         city: 'Location not available',
@@ -388,7 +392,7 @@ export default function MapPage() {
         country: data.countryName || 'Unknown Country'
       }
     } catch (error) {
-      console.error('Reverse geocoding error:', error)
+      // console.error('Reverse geocoding error:', error)
       return {
         city: 'Unknown Location',
         country: 'Unknown Country'
@@ -443,16 +447,8 @@ export default function MapPage() {
 
       await addCrimePoint(crimePointData)
       
-      // Reload Firebase data
-      await loadCrimeDataFromFirebase()
-      
-      // Forzar actualización inmediata del mapa
-      setTimeout(() => {
-        if (map.current && map.current.isStyleLoaded()) {
-          console.log('🔄 Actualizando mapa después de añadir nuevo punto...')
-          addHeatmapLayers()
-        }
-      }, 500)
+      // Recargar datos forzadamente para mostrar el nuevo punto
+      await loadCrimeDataFromFirebase(true)
       
       // Show success message in modal
       setShowSuccessMessage(true)
@@ -463,34 +459,34 @@ export default function MapPage() {
       }, 2000)
       
     } catch (error) {
-      console.error('Error adding crime point:', error)
+      // console.error('Error adding crime point:', error)
       alert('❌ Error adding crime point. Please try again.')
     } finally {
       setIsAddingCrime(false)
     }
   }
 
-  // Verificar autenticación - optimizado para carga más rápida
+  // Verificar autenticación
   useEffect(() => {
-    console.log('🔐 Iniciando verificación de autenticación...')
+    // console.log('🔐 Iniciando verificación de autenticación...')
     
     // Verificar si ya hay un usuario autenticado inmediatamente
     const currentUser = auth.currentUser
     if (currentUser) {
-      console.log('✅ Usuario ya autenticado:', currentUser.email)
+      // console.log('✅ Usuario ya autenticado:', currentUser.email)
       setUser(currentUser)
       setLoading(false)
       return
     }
     
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('🔐 Estado de autenticación cambiado:', user ? 'Usuario autenticado' : 'Usuario no autenticado')
+      // console.log('🔐 Estado de autenticación cambiado:', user ? 'Usuario autenticado' : 'Usuario no autenticado')
       if (user) {
-        console.log('✅ Usuario autenticado:', user.email)
+        // console.log('✅ Usuario autenticado:', user.email)
         setUser(user)
         setLoading(false)
       } else {
-        console.log('❌ Usuario no autenticado, redirigiendo...')
+        // console.log('❌ Usuario no autenticado, redirigiendo...')
         setUser(null)
         setLoading(false)
         // Redirigir a la página de autenticación si no hay usuario
@@ -504,38 +500,21 @@ export default function MapPage() {
   useEffect(() => {
     // Cargar datos de Firebase al montar el componente solo si hay usuario
     if (user) {
-      const loadData = async () => {
-        await loadCrimeDataFromFirebase()
-        // Reintentar una vez más después de 1 segundo si no hay datos (más rápido)
-        setTimeout(async () => {
-          if (!crimeDataFromFirebase) {
-            console.log('🔄 Reintentando carga de datos de Firebase...')
-            await loadCrimeDataFromFirebase()
-          }
-        }, 1000)
-      }
-      loadData()
+      loadCrimeDataFromFirebase()
     }
   }, [user])
 
 
-  // Recargar capas del mapa cuando cambien los datos - MEJORADO
+  // Recargar capas del mapa cuando cambien los datos
   useEffect(() => {
-    console.log('🔄 Efecto de recarga de capas ejecutado:', {
-      mapLoaded,
-      mapExists: !!map.current,
-      firebaseLoading,
-      hasData: crimeDataFromFirebase && crimeDataFromFirebase.features.length > 0,
-      dataLength: crimeDataFromFirebase?.features?.length || 0
-    })
 
     if (mapLoaded && map.current && !firebaseLoading) {
       // Verificar que el mapa esté completamente listo
       if (!map.current.isStyleLoaded()) {
-        console.log('⏳ Mapa no está completamente listo, esperando...')
+        // console.log('⏳ Mapa no está completamente listo, esperando...')
         const checkStyleLoaded = () => {
           if (map.current && map.current.isStyleLoaded()) {
-            console.log('✅ Mapa listo, añadiendo capas...')
+            // console.log('✅ Mapa listo, añadiendo capas...')
             addHeatmapLayers()
           } else {
             setTimeout(checkStyleLoaded, 100)
@@ -545,7 +524,7 @@ export default function MapPage() {
         return
       }
 
-      console.log('🎨 Añadiendo capas del mapa con datos de Firebase...')
+      // console.log('🎨 Añadiendo capas del mapa con datos de Firebase...')
       // Usar setTimeout para asegurar que el mapa esté completamente listo
       setTimeout(() => {
         addHeatmapLayers()
@@ -564,7 +543,7 @@ export default function MapPage() {
         const hasData = crimeDataFromFirebase && crimeDataFromFirebase.features.length > 0
         
         if (hasData && (!hasHeatmap || !hasPoints)) {
-          console.log('🔄 Capas perdidas detectadas, recargando...')
+          // console.log('🔄 Capas perdidas detectadas, recargando...')
           addHeatmapLayers()
         }
       }
@@ -575,16 +554,16 @@ export default function MapPage() {
 
   // Efecto para detectar cuando el contenedor está listo
   useEffect(() => {
-    console.log('🔍 Verificando contenedor del mapa...')
-    console.log('mapContainer.current:', mapContainer.current)
-    console.log('user:', user)
-    console.log('loading:', loading)
+    // console.log('🔍 Verificando contenedor del mapa...')
+    // console.log('mapContainer.current:', mapContainer.current)
+    // console.log('user:', user)
+    // console.log('loading:', loading)
     
     if (mapContainer.current) {
-      console.log('✅ Contenedor del mapa detectado en el DOM')
+      // console.log('✅ Contenedor del mapa detectado en el DOM')
       setContainerReady(true)
     } else {
-      console.log('⏳ Contenedor del mapa no está listo aún')
+      // console.log('⏳ Contenedor del mapa no está listo aún')
     }
   }, [user, loading])
 
@@ -593,30 +572,26 @@ export default function MapPage() {
     
     // Usar directamente el token de Mapbox que sabemos que funciona
     const token = "pk.eyJ1Ijoid29sbGVtYW5sZWNoNyIsImEiOiJjbWdjZ2JlaHgwM2x4MmxvaXo3NTc1dmJzIn0.SH5AqFeBIbNX7wCLQUM2fQ"
-    console.log('🗺️ === INICIANDO MAPA ===')
-    console.log('Mapbox token:', token ? 'Token exists' : 'Token missing')
-    console.log('Token length:', token ? token.length : 0)
+    // console.log('🗺️ === INICIANDO MAPA ===')
+    // console.log('Mapbox token:', token ? 'Token exists' : 'Token missing')
+    // console.log('Token length:', token ? token.length : 0)
     
     if (!token) {
-      console.error('❌ Mapbox token is missing')
+      // console.error('❌ Mapbox token is missing')
       setHasToken(false)
       return
     }
     
     mapboxgl.accessToken = token
-    console.log('✅ Token configurado en mapboxgl')
+    // console.log('✅ Token configurado en mapboxgl')
 
     // Función para inicializar el mapa
     const initializeMap = () => {
       if (mapContainer.current) {
-        console.log('✅ Contenedor del mapa encontrado:', mapContainer.current)
-        console.log('Container dimensions:', {
-          width: mapContainer.current.offsetWidth,
-          height: mapContainer.current.offsetHeight
-        })
+        // console.log('✅ Contenedor del mapa encontrado:', mapContainer.current)
         
         try {
-          console.log('🗺️ Creando instancia del mapa...')
+          // console.log('🗺️ Creando instancia del mapa...')
           
           map.current = new mapboxgl.Map({
             container: mapContainer.current,
@@ -626,31 +601,31 @@ export default function MapPage() {
             attributionControl: false
           })
 
-          console.log('✅ Instancia del mapa creada')
+          // console.log('✅ Instancia del mapa creada')
 
           map.current.on('load', () => {
-            console.log('✅ Mapa cargado exitosamente')
+            // console.log('✅ Mapa cargado exitosamente')
             setMapLoaded(true)
             
             // Añadir el mapa de calor después de que el mapa esté completamente cargado
             setTimeout(() => {
-              console.log('🎨 Añadiendo capas del mapa...')
+              // console.log('🎨 Añadiendo capas del mapa...')
               addHeatmapLayers()
             }, 1000)
           })
 
           map.current.on('error', (e) => {
-            console.error('❌ Error del mapa:', e)
-            console.error('Error type:', e.type)
-            console.error('Error details:', e.error)
+            // console.error('❌ Error del mapa:', e)
+            // console.error('Error type:', e.type)
+            // console.error('Error details:', e.error)
           })
 
           map.current.on('style.load', () => {
-            console.log('🎨 Estilo del mapa cargado')
+            // console.log('🎨 Estilo del mapa cargado')
           })
 
           map.current.on('style.error', (e) => {
-            console.error('❌ Error de estilo:', e)
+            // console.error('❌ Error de estilo:', e)
           })
 
           // Actualizar estado de zoom
@@ -674,22 +649,22 @@ export default function MapPage() {
                 const hasPoints = map.current.getLayer('crime-points')
                 
                 if (!hasHeatmap || !hasPoints) {
-                  console.log('🔄 Capas perdidas después del zoom, recargando...')
+                  // console.log('🔄 Capas perdidas después del zoom, recargando...')
                   addHeatmapLayers()
                 }
               }
             }, 100)
           })
           
-          console.log('✅ Eventos del mapa configurados')
+          // console.log('✅ Eventos del mapa configurados')
         } catch (error) {
-          console.error('❌ Error inicializando mapa:', error)
+          // console.error('❌ Error inicializando mapa:', error)
           if (error instanceof Error) {
-            console.error('Error stack:', error.stack)
+            // console.error('Error stack:', error.stack)
           }
         }
       } else {
-        console.error('❌ Contenedor del mapa no encontrado')
+        // console.error('❌ Contenedor del mapa no encontrado')
       }
     }
 
@@ -698,7 +673,7 @@ export default function MapPage() {
       initializeMap()
     } else {
       // Si el contenedor no está listo, esperar un poco más
-      console.log('⏳ Esperando a que el contenedor esté listo...')
+      // console.log('⏳ Esperando a que el contenedor esté listo...')
       setTimeout(() => {
         initializeMap()
       }, 100)
@@ -706,64 +681,50 @@ export default function MapPage() {
 
     return () => {
       if (map.current) {
-        console.log('🗑️ Limpiando mapa...')
+        // console.log('🗑️ Limpiando mapa...')
         map.current.remove()
         map.current = null
       }
     }
   }, [containerReady])
 
-  // Función para añadir las capas del mapa de calor - MEJORADA
+  // Función para añadir las capas del mapa de calor - optimizada
   const addHeatmapLayers = () => {
-    console.log('🎨 Iniciando addHeatmapLayers...')
-    
-    if (!map.current) {
-      console.log('❌ Mapa no existe')
+    if (!map.current || !map.current.isStyleLoaded()) {
       return
     }
 
-    if (!map.current.isStyleLoaded()) {
-      console.log('❌ Estilo del mapa no está cargado')
+    // Evitar renderizado innecesario si no hay datos
+    const dataToUse = getCrimeDataToUse()
+    if (!dataToUse || !dataToUse.features || dataToUse.features.length === 0) {
       return
     }
 
     try {
-      console.log('🧹 Limpiando capas existentes...')
+      // console.log('🧹 Limpiando capas existentes...')
       
       // Limpiar fuentes y capas existentes de forma segura
       if (map.current.getLayer('crime-heatmap')) {
-        console.log('🗑️ Eliminando capa crime-heatmap')
+        // console.log('🗑️ Eliminando capa crime-heatmap')
         map.current.removeLayer('crime-heatmap')
       }
       if (map.current.getLayer('crime-points')) {
-        console.log('🗑️ Eliminando capa crime-points')
+        // console.log('🗑️ Eliminando capa crime-points')
         map.current.removeLayer('crime-points')
       }
       if (map.current.getSource('crime-data')) {
-        console.log('🗑️ Eliminando fuente crime-data')
+        // console.log('🗑️ Eliminando fuente crime-data')
         map.current.removeSource('crime-data')
       }
 
-      // Obtener datos y verificar que hay datos disponibles
-      const dataToUse = getCrimeDataToUse()
-      console.log('📊 Datos a usar:', {
-        hasData: !!dataToUse,
-        featuresCount: dataToUse?.features?.length || 0,
-        dataType: typeof dataToUse
-      })
-      
-      if (!dataToUse || !dataToUse.features || dataToUse.features.length === 0) {
-        console.log('⚠️ No hay datos de crimen disponibles para mostrar')
-        return
-      }
 
-      console.log('➕ Añadiendo fuente de datos...')
+      // console.log('➕ Añadiendo fuente de datos...')
       // Añadir fuente de datos para el mapa de calor
       map.current.addSource('crime-data', {
         type: 'geojson',
         data: dataToUse as any
       })
-      console.log(`✅ Fuente de datos añadida exitosamente con ${dataToUse.features.length} características`)
+      // console.log(`✅ Fuente de datos añadida exitosamente con ${dataToUse.features.length} características`)
 
       // Añadir capa de mapa de calor - prominente desde lejos
       map.current.addLayer({
@@ -858,7 +819,7 @@ export default function MapPage() {
         }
       })
 
-      console.log('✅ Capas del mapa de calor añadidas exitosamente')
+      // console.log('✅ Capas del mapa de calor añadidas exitosamente')
 
       // Añadir eventos de click a los puntos de crimen
       map.current.on('click', 'crime-points', (e) => {
@@ -912,12 +873,12 @@ export default function MapPage() {
       })
 
     } catch (error) {
-      console.error('❌ Error añadiendo capas del mapa de calor:', error)
-      console.error('Detalles del error:', error)
+      // console.error('❌ Error añadiendo capas del mapa de calor:', error)
+      // console.error('Detalles del error:', error)
       
       // Intentar reintentar después de un breve delay
       setTimeout(() => {
-        console.log('🔄 Reintentando añadir capas...')
+        // console.log('🔄 Reintentando añadir capas...')
         if (map.current && map.current.isStyleLoaded()) {
           addHeatmapLayers()
         }
@@ -939,7 +900,7 @@ export default function MapPage() {
   }
 
 
-  // Funciones para el buscador - MEJORADA con ciudades dinámicas globales
+  // Funciones para el buscador - optimizada
   const handleSearch = (query: string) => {
     setSearchQuery(query)
     if (query.length > 0) {
@@ -996,7 +957,7 @@ export default function MapPage() {
       await signOut(auth)
       router.push('/auth')
     } catch (error) {
-      console.error('Error signing out:', error)
+      // console.error('Error signing out:', error)
     }
   }
 
@@ -1082,9 +1043,9 @@ export default function MapPage() {
     )
   }
 
-  // Mostrar loading solo brevemente mientras se verifica la autenticación
+  // Mostrar loading mientras se verifica la autenticación
   if (loading) {
-    console.log('⏳ Verificando autenticación...')
+    // console.log('⏳ Verificando autenticación...')
     return (
       <div className="relative w-screen h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
@@ -1096,14 +1057,14 @@ export default function MapPage() {
 
   // Si no hay usuario, no mostrar nada (se redirigirá automáticamente)
   if (!user) {
-    console.log('❌ No hay usuario, no renderizando mapa')
+    // console.log('❌ No hay usuario, no renderizando mapa')
     return null
   }
 
-  console.log('🎨 Renderizando componente del mapa')
+  // console.log('🎨 Renderizando componente del mapa')
 
   return (
-    <div className="relative w-screen h-screen bg-gray-900">
+    <div className="page-container relative w-screen h-screen bg-gray-900">
       <div 
         ref={mapContainer} 
         className="absolute inset-0" 
@@ -1194,17 +1155,46 @@ export default function MapPage() {
       {/* Firebase loading indicator */}
       {firebaseLoading && (
         <div className="absolute top-20 left-20 bg-blue-500/90 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm z-50 max-w-xs">
-          🔄 Loading Firebase data...
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            {retryCount > 0 ? `Reintentando... (${retryCount}/3)` : 'Cargando datos...'}
+          </div>
         </div>
       )}
 
       {/* Data source indicator */}
       {!firebaseLoading && mapLoaded && (
-        <div className="absolute top-20 left-20 bg-green-500/90 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm z-50 max-w-xs">
-          {crimeDataFromFirebase && crimeDataFromFirebase.features.length > 0 ? 
-            `✅ Firebase (${crimeDataFromFirebase.features.length} points)` : 
-            '⚠️ Loading data...'
-          }
+        <div className={`absolute top-20 left-20 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm z-50 max-w-xs ${
+          firebaseError ? 'bg-red-500/90' : 'bg-green-500/90'
+        }`}>
+          {firebaseError ? (
+            <div className="flex items-center gap-2">
+              <span>❌</span>
+              <span>{firebaseError}</span>
+              <button 
+                onClick={() => loadCrimeDataFromFirebase(true)}
+                className="ml-2 px-2 py-1 bg-white/20 rounded text-xs hover:bg-white/30 transition-colors"
+              >
+                Reintentar
+              </button>
+            </div>
+          ) : crimeDataFromFirebase && crimeDataFromFirebase.features.length > 0 ? (
+            <div className="flex items-center gap-2">
+              <span>✅</span>
+              <span>Firebase ({crimeDataFromFirebase.features.length} puntos)</span>
+              <button 
+                onClick={() => loadCrimeDataFromFirebase(true)}
+                className="ml-2 px-2 py-1 bg-white/20 rounded text-xs hover:bg-white/30 transition-colors"
+              >
+                Actualizar
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span>⚠️</span>
+              <span>Sin datos disponibles</span>
+            </div>
+          )}
         </div>
       )}
 
