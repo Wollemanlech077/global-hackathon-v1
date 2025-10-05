@@ -64,22 +64,23 @@ html, body {
 .hero-title {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 300;
+  font-weight: 200; /* 👈 Mismo peso que el título */
   line-height: 1.3;
-  letter-spacing: -0.02em;
-  color: #C5D3E0; /* 👈 Azul cielo metálico */
+  letter-spacing: -0.03em; /* 👈 Mismo letter spacing que el título */
+  color: #CBD5E1; /* 👈 Mismo color que el título */
   padding-left: 3rem; /* 👈 Separación del lado izquierdo */
 }
 
 .main-title {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-weight: 300; /* 👈 Peso ligero igual que hero-title */
-  letter-spacing: -0.02em; /* 👈 Letter spacing igual */
-  padding-right: 4rem; /* 👈 Misma separación que el botón */
+  font-weight: 200;
+  letter-spacing: -0.03em;
+  text-align: center;
+  line-height: 1.1;
 }
 
 .subtitle-tags {
-  margin-right: 4rem; /* 👈 Misma separación del borde derecho que el botón */
+  /* Centered subtitle tags */
 }
 
 /* Glassmorphism card para el mapa */
