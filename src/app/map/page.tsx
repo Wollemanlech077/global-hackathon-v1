@@ -297,10 +297,10 @@ export default function MapPage() {
       const autoRisk = 'Medium' // Default risk level
       
       // Reset form with automatic values
-      setNewCrimePoint({
+    setNewCrimePoint({
         city: locationData.city || 'Unknown Location',
-        incident: '',
-        details: '',
+      incident: '',
+      details: '',
         risk: autoRisk,
         intensity: 0.1, // Default intensity
         crimes: 1, // Default crimes count
@@ -315,9 +315,9 @@ export default function MapPage() {
         details: '',
         risk: 'Medium',
         intensity: 0.1,
-        crimes: 1,
-        date: new Date().toISOString().split('T')[0]
-      })
+      crimes: 1,
+      date: new Date().toISOString().split('T')[0]
+    })
     }
   }
 
@@ -459,7 +459,7 @@ export default function MapPage() {
       
       // Close modal after 2 seconds
       setTimeout(() => {
-        closeAddCrimeModal()
+      closeAddCrimeModal()
       }, 2000)
       
     } catch (error) {
@@ -1397,48 +1397,48 @@ export default function MapPage() {
       )}
 
        {/* Report incident modal */}
-       {showAddCrimeModal && (
-         <div 
-           className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4" 
-           style={{ 
-             zIndex: 9999,
-             position: 'fixed',
-             top: 0,
-             left: 0,
-             right: 0,
-             bottom: 0,
-             backdropFilter: 'blur(8px)'
-           }}
-           onClick={closeAddCrimeModal}
-         >
-           <div 
-             className="crime-modal"
+      {showAddCrimeModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4" 
+          style={{ 
+            zIndex: 9999,
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backdropFilter: 'blur(8px)'
+          }}
+          onClick={closeAddCrimeModal}
+        >
+          <div 
+            className="crime-modal"
              style={{ height: '520px', width: '600px' }}
-             onClick={(e) => e.stopPropagation()}
-           >
+            onClick={(e) => e.stopPropagation()}
+          >
              {/* Modal header */}
-             <div className="crime-modal-header">
-               <div>
+            <div className="crime-modal-header">
+              <div>
                  <h2 className="crime-modal-title">Report Incident</h2>
                  <p className="crime-modal-subtitle">Quick Report - Your location detected automatically</p>
-               </div>
-               <button
-                 onClick={closeAddCrimeModal}
-                 className="crime-modal-close"
-                 disabled={isAddingCrime}
-               >
-                 ×
-               </button>
-             </div>
+              </div>
+              <button
+                onClick={closeAddCrimeModal}
+                className="crime-modal-close"
+                disabled={isAddingCrime}
+              >
+                ×
+              </button>
+            </div>
 
              {/* Modal content - Single Step */}
-             <div className="crime-modal-content">
+            <div className="crime-modal-content">
                {showSuccessMessage ? (
                  <div className="h-full flex flex-col items-center justify-center text-center">
                    <div className="mb-6">
                      <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                        <span className="text-white text-2xl">✓</span>
-                     </div>
+                  </div>
                      <h3 className="crime-section-title mb-2">Report Submitted Successfully!</h3>
                      <p className="crime-section-subtitle">
                        Your incident has been added to the map and is now visible to other users.
@@ -1451,73 +1451,73 @@ export default function MapPage() {
                    <div className="mb-6">
                      <h3 className="crime-section-title mb-4">Select Incident Type *</h3>
                      <div className="grid grid-cols-3 gap-3">
-                       {incidentTypes.map((incident) => (
-                         <button
-                           key={incident.id}
-                           onClick={() => selectIncidentType(incident.name)}
-                           className="crime-incident-button"
+                    {incidentTypes.map((incident) => (
+                      <button
+                        key={incident.id}
+                        onClick={() => selectIncidentType(incident.name)}
+                        className="crime-incident-button"
                            style={{
                              border: newCrimePoint.incident === incident.name ? '2px solid #3b82f6' : '1px solid rgba(156, 163, 175, 0.3)',
                              backgroundColor: newCrimePoint.incident === incident.name ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255, 255, 255, 0.8)'
                            }}
                            disabled={isAddingCrime}
-                         >
+                      >
                            <span className="crime-incident-icon">{incident.icon}</span>
                            <span className="crime-incident-text">{incident.name}</span>
-                         </button>
-                       ))}
-                     </div>
-                   </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                    {/* Details Input */}
                    <div className="flex-1">
-                     <div className="crime-input-group">
-                       <label className="crime-label">
+                      <div className="crime-input-group">
+                        <label className="crime-label">
                          Incident Details *
-                       </label>
-                       <textarea
-                         value={newCrimePoint.details}
-                         onChange={(e) => setNewCrimePoint({...newCrimePoint, details: e.target.value})}
-                         className="crime-input"
+                      </label>
+                      <textarea
+                        value={newCrimePoint.details}
+                        onChange={(e) => setNewCrimePoint({...newCrimePoint, details: e.target.value})}
+                        className="crime-input"
                          placeholder="Describe what happened..."
-                         rows={4}
-                         required
-                         disabled={isAddingCrime}
+                        rows={4}
+                        required
+                        disabled={isAddingCrime}
                          style={{ resize: 'vertical', minHeight: '100px' }}
-                       />
-                     </div>
-                   </div>
-                 </div>
-               )}
-             </div>
-
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+                  </div>
+                  
              {/* Footer with buttons */}
              {!showSuccessMessage && (
-               <div className="crime-modal-footer">
-                 <div className="flex gap-3">
-                   <button
-                     type="button"
+            <div className="crime-modal-footer">
+              <div className="flex gap-3">
+                  <button
+                    type="button"
                      onClick={closeAddCrimeModal}
-                     className="crime-button"
-                     disabled={isAddingCrime}
-                   >
+                    className="crime-button"
+                    disabled={isAddingCrime}
+                  >
                      Cancel
-                   </button>
+                  </button>
                    
-                   <button
-                     type="button"
-                     onClick={handleAddCrimePoint}
+                  <button
+                    type="button"
+                    onClick={handleAddCrimePoint}
                      disabled={isAddingCrime || !newCrimePoint.incident || !newCrimePoint.details}
-                     className="crime-button flex-1"
-                   >
+                    className="crime-button flex-1"
+                  >
                      {isAddingCrime ? 'Submitting...' : 'Submit Report'}
-                   </button>
-                 </div>
-               </div>
+                  </button>
+              </div>
+            </div>
              )}
-           </div>
-         </div>
-       )}
+          </div>
+        </div>
+      )}
 
     </div>
   )

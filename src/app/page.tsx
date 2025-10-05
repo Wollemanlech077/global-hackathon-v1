@@ -1,45 +1,92 @@
 'use client'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
 export default function Home() {
   const router = useRouter()
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (e.deltaY > 50 && !scrolled) {
+        setScrolled(true)
+      } else if (e.deltaY < -50 && scrolled) {
+        setScrolled(false)
+      }
+    }
+
+    window.addEventListener('wheel', handleWheel)
+    return () => window.removeEventListener('wheel', handleWheel)
+  }, [scrolled])
+
   return (
-    <div
-      className="h-screen w-full bg-cover bg-center bg-no-repeat flex flex-col justify-between"
-      style={{
-        backgroundImage: 'url(/background.png)',
-      }}
-    >
-      {/* Logo en la parte superior izquierda */}
-      <div style={{
-        position: 'absolute',
-        top: '30px',
-        left: '30px',
-        zIndex: 10,
-        cursor: 'pointer'
-      }}
-      onClick={() => router.push('/')}
+    <div style={{ height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      {/* Primera sección - Hero (fija) */}
+      <div
+        className="h-screen w-full bg-cover bg-center bg-no-repeat flex flex-col justify-between fixed top-0 left-0"
+        style={{
+          backgroundImage: 'url(/background.png)',
+          zIndex: 1
+        }}
       >
-        <Image 
-          src="/logo.png" 
-          alt="Logo" 
-          width={48}
-          height={48}
-          style={{
-            filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
-            transition: 'transform 0.2s ease'
+      {/* Spacer invisible para mantener el layout */}
+      <div className="mt-20" style={{ opacity: 0, pointerEvents: 'none' }}>
+        <h1 className="main-title mb-8" style={{ 
+          color: '#CBD5E1',
+          fontSize: '4.5rem',
+          fontWeight: '200',
+          letterSpacing: '-0.03em',
+          lineHeight: '1.1'
+        }}>
+          Beyond the Surface
+        </h1>
+        <div 
+          className="subtitle-tags rounded-full backdrop-blur-md border border-white/20 flex items-center justify-center mx-auto" 
+          style={{ 
+            color: '#CBD5E1',
+            paddingLeft: '2rem',
+            paddingRight: '2rem',
+            paddingTop: '0.875rem',
+            paddingBottom: '0.875rem',
+            width: 'fit-content'
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.1)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)'
-          }}
-        />
+        >
+          <span>Aether</span>
+          <span>API</span>
+          <span>Pricing</span>
+          <span>Team</span>
+        </div>
       </div>
-      {/* Centered Section */}
-      <div className="flex flex-col items-center text-center mt-20">
+
+      {/* Bottom Section - Solo texto */}
+      <div 
+        className="flex justify-start items-end mb-20 px-16"
+        style={{
+          position: 'relative',
+          zIndex: 10,
+          opacity: scrolled ? 0 : 1,
+          transition: 'opacity 0.5s ease',
+          visibility: scrolled ? 'hidden' : 'visible'
+        }}
+      >
+        <p className="hero-title w-1/2">
+          The single platform to score, evaluate, monitor, and map risks
+        </p>
+      </div>
+      </div>
+
+      {/* Título y subtítulos fijos - FUERA del contenedor principal */}
+      <div 
+        className="flex flex-col items-center text-center"
+        style={{
+          position: 'fixed',
+          top: '-25px',
+          left: '0',
+          right: '0',
+          zIndex: 100
+        }}
+      >
         <h1 className="main-title mb-8" style={{ 
           color: '#CBD5E1',
           fontSize: '4.5rem',
@@ -64,7 +111,7 @@ export default function Home() {
             gap: '2.5rem',
             fontSize: '1rem',
             fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-            fontWeight: '400',
+            fontWeight: '200',
             borderWidth: '1px'
           }}
         >
@@ -77,7 +124,7 @@ export default function Home() {
               paddingBottom: '0.625rem',
               borderRadius: '25px',
               color: '#CBD5E1',
-              fontWeight: '500',
+              fontWeight: '200',
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
               border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -93,7 +140,7 @@ export default function Home() {
               opacity: 0.7,
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontWeight: '400',
+              fontWeight: '200',
               paddingLeft: '1rem',
               paddingRight: '1rem',
               paddingTop: '0.5rem',
@@ -120,7 +167,7 @@ export default function Home() {
               opacity: 0.7,
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontWeight: '400',
+              fontWeight: '200',
               paddingLeft: '1rem',
               paddingRight: '1rem',
               paddingTop: '0.5rem',
@@ -147,7 +194,7 @@ export default function Home() {
               opacity: 0.7,
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontWeight: '400',
+              fontWeight: '200',
               paddingLeft: '1rem',
               paddingRight: '1rem',
               paddingTop: '0.5rem',
@@ -170,16 +217,75 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="flex justify-between items-end mb-20 px-16">
-        <p className="hero-title w-1/2">
-          The single platform to score, evaluate, monitor, and map risks
-        </p>
-        
+      {/* Logo fijo que siempre está visible */}
+      <div 
+        style={{
+          position: 'fixed',
+          top: '30px',
+          left: '30px',
+          zIndex: 9999,
+          cursor: 'pointer'
+        }}
+        onClick={() => router.push('/')}
+      >
+        <Image 
+          src="/logo.png" 
+          alt="Logo" 
+          width={48}
+          height={48}
+          style={{
+            filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
+            transition: 'transform 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.1)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+          }}
+        />
+      </div>
+
+
+      {/* Botón fijo que siempre está visible */}
+      <div 
+        style={{
+          position: 'fixed',
+          bottom: '80px',
+          right: '64px',
+          zIndex: 9999
+        }}
+      >
         <button className="portal-button" onClick={() => window.open('/map', '_blank')}>
           <span className="button-text">Explore the portal</span>
           <span className="arrow-circle">→</span>
         </button>
+      </div>
+
+      {/* Segunda sección que sube desde abajo */}
+      <div 
+        className="h-screen w-full flex items-center justify-center"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          transform: scrolled ? 'translateY(0)' : 'translateY(100vh)',
+          transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+          background: 'rgba(255, 255, 255, 0.08)',
+          backdropFilter: 'blur(40px)',
+          WebkitBackdropFilter: 'blur(40px)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.3)',
+          zIndex: 50
+        }}
+      >
+        {/* Contenido vacío - solo efecto blur */}
+        <div style={{
+          width: '100%',
+          height: '100%'
+        }}>
+        </div>
       </div>
     </div>
   )
