@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
@@ -25,32 +25,32 @@ export default function MapPage() {
   const [showSearchResults, setShowSearchResults] = useState(false)
   const [crimeDataFromFirebase, setCrimeDataFromFirebase] = useState<any>(null)
   const [firebaseLoading, setFirebaseLoading] = useState(false)
+  const [dynamicCities, setDynamicCities] = useState<any[]>([])
   const [showAddCrimeModal, setShowAddCrimeModal] = useState(false)
-  const [currentStep, setCurrentStep] = useState(1)
-  const [selectedIncidentType, setSelectedIncidentType] = useState('')
   const [newCrimePoint, setNewCrimePoint] = useState({
     city: '',
     incident: '',
     details: '',
     risk: 'Low',
-    intensity: 0.3,
+    intensity: 0.1,
     crimes: 1,
     date: new Date().toISOString().split('T')[0]
   })
   const [isAddingCrime, setIsAddingCrime] = useState(false)
   const [containerReady, setContainerReady] = useState(false)
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
 
-  // Tipos de incidentes disponibles
+  // Available incident types
   const incidentTypes = [
-    { id: 'robbery', name: 'Robo', icon: '💰', color: 'bg-yellow-500' },
-    { id: 'assault', name: 'Asalto', icon: '👊', color: 'bg-orange-500' },
-    { id: 'accident', name: 'Accidente vial', icon: '🚗', color: 'bg-red-500' },
-    { id: 'medical', name: 'Emergencia médica', icon: '🏥', color: 'bg-purple-500' },
-    { id: 'fire', name: 'Incendio', icon: '🔥', color: 'bg-orange-600' },
-    { id: 'missing', name: 'Desaparición', icon: '👤', color: 'bg-purple-600' },
-    { id: 'sexual', name: 'Delito sexual', icon: '🚫', color: 'bg-red-600' },
-    { id: 'vandalism', name: 'Vandalismo', icon: '🎨', color: 'bg-pink-500' },
-    { id: 'shooting', name: 'Tiroteo', icon: '🔫', color: 'bg-green-600' }
+    { id: 'robbery', name: 'Theft', icon: '💰', color: 'bg-yellow-500' },
+    { id: 'assault', name: 'Assault', icon: '👊', color: 'bg-orange-500' },
+    { id: 'accident', name: 'Traffic accident', icon: '🚗', color: 'bg-red-500' },
+    { id: 'medical', name: 'Medical emergency', icon: '🏥', color: 'bg-purple-500' },
+    { id: 'fire', name: 'Fire', icon: '🔥', color: 'bg-orange-600' },
+    { id: 'missing', name: 'Disappearance', icon: '👤', color: 'bg-purple-600' },
+    { id: 'sexual', name: 'Sexual offense', icon: '🚫', color: 'bg-red-600' },
+    { id: 'vandalism', name: 'Vandalism', icon: '🎨', color: 'bg-pink-500' },
+    { id: 'shooting', name: 'Shooting', icon: '🔫', color: 'bg-green-600' }
   ]
 
   // Lista de ciudades alemanas para el buscador
@@ -138,21 +138,136 @@ export default function MapPage() {
 
   // Datos estáticos eliminados - ahora usamos solo Firebase
 
-  // Función para cargar datos de Firebase
+  // Función para obtener país desde coordenadas (geocodificación inversa)
+  const getCountryFromCoordinates = async (latitude: number, longitude: number): Promise<string> => {
+    try {
+      const response = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+      )
+      
+      if (!response.ok) {
+        throw new Error('Reverse geocoding failed')
+      }
+      
+      const data = await response.json()
+      return data.countryName || 'Unknown Country'
+    } catch (error) {
+      console.error('Error getting country from coordinates:', error)
+      return 'Unknown Country'
+    }
+  }
+
+  // Función para extraer ciudades únicas de los datos de Firebase
+  const extractUniqueCities = async (firebaseData: any) => {
+    if (!firebaseData || !firebaseData.features || firebaseData.features.length === 0) {
+      return []
+    }
+
+    const cityMap = new Map()
+    
+    // Procesar cada feature
+    for (const feature of firebaseData.features) {
+      const city = feature.properties?.city
+      let country = feature.properties?.country
+      const coordinates = feature.geometry?.coordinates
+      
+      if (city && coordinates && coordinates.length >= 2) {
+        // Si no hay país, intentar obtenerlo desde las coordenadas
+        if (!country || country === 'Unknown Country') {
+          try {
+            country = await getCountryFromCoordinates(coordinates[1], coordinates[0])
+          } catch (error) {
+            console.error('Error getting country for coordinates:', coordinates, error)
+            country = 'Unknown Country'
+          }
+        }
+        
+        // Crear una clave única que incluya ciudad y país para evitar duplicados
+        const cityKey = `${city.toLowerCase().trim()}_${country.toLowerCase().trim()}`
+        
+        if (!cityMap.has(cityKey)) {
+          cityMap.set(cityKey, {
+            name: city,
+            country: country,
+            coordinates: coordinates,
+            crimeCount: 1,
+            riskLevel: feature.properties?.risk || 'Medium'
+          })
+        } else {
+          // Si la ciudad ya existe, incrementar el conteo de crímenes
+          const existingCity = cityMap.get(cityKey)
+          existingCity.crimeCount += 1
+          
+          // Actualizar el nivel de riesgo al más alto
+          const riskLevels = ['Low', 'Medium', 'High', 'Very High']
+          const currentRiskIndex = riskLevels.indexOf(existingCity.riskLevel)
+          const newRiskIndex = riskLevels.indexOf(feature.properties?.risk || 'Medium')
+          
+          if (newRiskIndex > currentRiskIndex) {
+            existingCity.riskLevel = feature.properties?.risk || 'Medium'
+          }
+        }
+      }
+    }
+
+    // Convertir Map a Array y ordenar por número de crímenes (descendente)
+    const uniqueCities = Array.from(cityMap.values()).sort((a, b) => b.crimeCount - a.crimeCount)
+    
+    console.log('🏙️ Ciudades únicas extraídas:', uniqueCities.length)
+    return uniqueCities
+  }
+
+  // Función para cargar datos de Firebase - MEJORADA
   const loadCrimeDataFromFirebase = async () => {
+    console.log('🔄 Iniciando carga de datos de Firebase...')
     setFirebaseLoading(true)
+    
     try {
       const firebaseData = await getCrimePointsAsGeoJSON()
+      console.log('📊 Datos recibidos de Firebase:', firebaseData)
+      
       if (firebaseData && firebaseData.features && firebaseData.features.length > 0) {
         console.log('✅ Datos cargados desde Firebase:', firebaseData.features.length, 'puntos')
         setCrimeDataFromFirebase(firebaseData)
+        
+        // Extraer ciudades únicas para la búsqueda dinámica
+        const cities = await extractUniqueCities(firebaseData)
+        setDynamicCities(cities)
+        
+        // Forzar actualización del mapa si está listo
+        if (map.current && map.current.isStyleLoaded()) {
+          console.log('🔄 Forzando actualización del mapa...')
+          setTimeout(() => {
+            addHeatmapLayers()
+          }, 300)
+        }
       } else {
         console.log('⚠️ No hay datos en Firebase disponibles')
         setCrimeDataFromFirebase(null)
+        setDynamicCities([])
       }
     } catch (error) {
       console.error('❌ Error cargando datos de Firebase:', error)
       setCrimeDataFromFirebase(null)
+      setDynamicCities([])
+      
+      // Reintentar después de un delay
+      setTimeout(async () => {
+        console.log('🔄 Reintentando carga de datos de Firebase...')
+        try {
+          const retryData = await getCrimePointsAsGeoJSON()
+          if (retryData && retryData.features && retryData.features.length > 0) {
+            console.log('✅ Datos cargados en reintento:', retryData.features.length, 'puntos')
+            setCrimeDataFromFirebase(retryData)
+            
+            // Extraer ciudades únicas para la búsqueda dinámica
+            const cities = await extractUniqueCities(retryData)
+            setDynamicCities(cities)
+          }
+        } catch (retryError) {
+          console.error('❌ Error en reintento:', retryError)
+        }
+      }, 2000)
     } finally {
       setFirebaseLoading(false)
     }
@@ -166,99 +281,190 @@ export default function MapPage() {
     }
   }
 
-  // Función para abrir el modal de añadir crimen
-  const openAddCrimeModal = () => {
+  // Function to open the add crime modal
+  const openAddCrimeModal = async () => {
     setShowAddCrimeModal(true)
-    setCurrentStep(1)
-    setSelectedIncidentType('')
-    // Resetear el formulario
+    
+    // Get user's current location automatically
+    try {
+      const position = await getCurrentPosition()
+      const { latitude, longitude } = position.coords
+      
+      // Reverse geocode to get city name and country
+      const locationData = await reverseGeocode(latitude, longitude)
+      
+      // Auto-assign risk based on incident type (we'll set this when user selects incident)
+      const autoRisk = 'Medium' // Default risk level
+      
+      // Reset form with automatic values
+    setNewCrimePoint({
+        city: locationData.city || 'Unknown Location',
+      incident: '',
+      details: '',
+        risk: autoRisk,
+        intensity: 0.1, // Default intensity
+        crimes: 1, // Default crimes count
+        date: new Date().toISOString().split('T')[0] // Today's date
+      })
+    } catch (error) {
+      console.error('Error getting location:', error)
+      // If location fails, still open modal but with default values
+      setNewCrimePoint({
+        city: 'Location not available',
+        incident: '',
+        details: '',
+        risk: 'Medium',
+        intensity: 0.1,
+      crimes: 1,
+      date: new Date().toISOString().split('T')[0]
+    })
+    }
+  }
+
+  // Function to close the modal
+  const closeAddCrimeModal = () => {
+    setShowAddCrimeModal(false)
+    setIsAddingCrime(false)
+    setShowSuccessMessage(false)
+    // Reset form
     setNewCrimePoint({
       city: '',
       incident: '',
       details: '',
       risk: 'Low',
-      intensity: 0.3,
+      intensity: 0.1,
       crimes: 1,
       date: new Date().toISOString().split('T')[0]
     })
   }
 
-  // Función para cerrar el modal
-  const closeAddCrimeModal = () => {
-    setShowAddCrimeModal(false)
-    setCurrentStep(1)
-    setSelectedIncidentType('')
-    setIsAddingCrime(false)
-  }
-
-  // Función para ir al siguiente paso
-  const nextStep = () => {
-    if (currentStep < 3) {
-      setCurrentStep(currentStep + 1)
-    }
-  }
-
-  // Función para ir al paso anterior
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
-    }
-  }
-
-  // Función para seleccionar tipo de incidente
+  // Function to select incident type
   const selectIncidentType = (type: string) => {
-    setSelectedIncidentType(type)
-    setNewCrimePoint({...newCrimePoint, incident: type})
-    nextStep()
+    const autoRisk = getAutoRisk(type)
+    setNewCrimePoint({
+      ...newCrimePoint, 
+      incident: type,
+      risk: autoRisk
+    })
   }
 
-  // Función para obtener coordenadas de una ciudad
-  const getCityCoordinates = (cityName: string) => {
-    const city = germanCities.find(c => c.name.toLowerCase() === cityName.toLowerCase())
-    return city ? city.coordinates : null
+  // Function to get current position with promise
+  const getCurrentPosition = (): Promise<GeolocationPosition> => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation is not supported'))
+        return
+      }
+      
+      navigator.geolocation.getCurrentPosition(
+        (position) => resolve(position),
+        (error) => reject(error),
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        }
+      )
+    })
   }
 
-  // Función para añadir nuevo punto de crimen
-  const handleAddCrimePoint = async () => {
-    if (!newCrimePoint.city || !newCrimePoint.incident || !newCrimePoint.details) {
-      alert('Por favor completa todos los campos obligatorios')
-      return
+  // Function to reverse geocode coordinates to city name and country
+  const reverseGeocode = async (latitude: number, longitude: number): Promise<{city: string, country: string}> => {
+    try {
+      // Using a simple reverse geocoding service (you can replace with your preferred service)
+      const response = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+      )
+      
+      if (!response.ok) {
+        throw new Error('Reverse geocoding failed')
+      }
+      
+      const data = await response.json()
+      
+      // Return city name and country
+      return {
+        city: data.city || data.locality || data.principalSubdivision || data.countryName || 'Unknown Location',
+        country: data.countryName || 'Unknown Country'
+      }
+    } catch (error) {
+      console.error('Reverse geocoding error:', error)
+      return {
+        city: 'Unknown Location',
+        country: 'Unknown Country'
+      }
     }
+  }
 
-    const coordinates = getCityCoordinates(newCrimePoint.city)
-    if (!coordinates) {
-      alert('Ciudad no encontrada. Por favor selecciona una ciudad válida.')
+  // Function to auto-assign risk based on incident type
+  const getAutoRisk = (incidentType: string): string => {
+    const highRiskTypes = ['shooting', 'assault', 'sexual', 'fire']
+    const mediumRiskTypes = ['robbery', 'accident', 'vandalism']
+    
+    if (highRiskTypes.includes(incidentType.toLowerCase())) {
+      return 'High'
+    } else if (mediumRiskTypes.includes(incidentType.toLowerCase())) {
+      return 'Medium'
+    } else {
+      return 'Low'
+    }
+  }
+
+  // Function to add new crime point
+  const handleAddCrimePoint = async () => {
+    if (!newCrimePoint.incident || !newCrimePoint.details) {
+      alert('Please select an incident type and provide details')
       return
     }
 
     setIsAddingCrime(true)
 
     try {
+      // Get user's current location for coordinates
+      const position = await getCurrentPosition()
+      const { latitude, longitude } = position.coords
+      
+      // Obtener información de ubicación completa desde las coordenadas
+      const locationData = await reverseGeocode(latitude, longitude)
+      
       const crimePointData = {
-        city: newCrimePoint.city,
+        city: locationData.city,
         incident: newCrimePoint.incident,
         details: newCrimePoint.details,
         risk: newCrimePoint.risk,
         intensity: newCrimePoint.intensity,
         crimes: newCrimePoint.crimes,
         date: newCrimePoint.date,
-        longitude: coordinates[0],
-        latitude: coordinates[1],
-        coordinates: coordinates
+        country: locationData.country,
+        longitude: longitude,
+        latitude: latitude,
+        coordinates: [longitude, latitude]
       }
 
       await addCrimePoint(crimePointData)
       
-      // Recargar datos de Firebase
+      // Reload Firebase data
       await loadCrimeDataFromFirebase()
       
-      // Cerrar modal y mostrar mensaje de éxito
+      // Forzar actualización inmediata del mapa
+      setTimeout(() => {
+        if (map.current && map.current.isStyleLoaded()) {
+          console.log('🔄 Actualizando mapa después de añadir nuevo punto...')
+          addHeatmapLayers()
+        }
+      }, 500)
+      
+      // Show success message in modal
+      setShowSuccessMessage(true)
+      
+      // Close modal after 2 seconds
+      setTimeout(() => {
       closeAddCrimeModal()
-      alert('✅ Punto de crimen añadido exitosamente!')
+      }, 2000)
       
     } catch (error) {
-      console.error('Error añadiendo punto de crimen:', error)
-      alert('❌ Error al añadir el punto de crimen. Inténtalo de nuevo.')
+      console.error('Error adding crime point:', error)
+      alert('❌ Error adding crime point. Please try again.')
     } finally {
       setIsAddingCrime(false)
     }
@@ -313,16 +519,59 @@ export default function MapPage() {
   }, [user])
 
 
-  // Recargar capas del mapa cuando cambien los datos
+  // Recargar capas del mapa cuando cambien los datos - MEJORADO
   useEffect(() => {
-    if (mapLoaded && map.current && !firebaseLoading && crimeDataFromFirebase && crimeDataFromFirebase.features.length > 0) {
+    console.log('🔄 Efecto de recarga de capas ejecutado:', {
+      mapLoaded,
+      mapExists: !!map.current,
+      firebaseLoading,
+      hasData: crimeDataFromFirebase && crimeDataFromFirebase.features.length > 0,
+      dataLength: crimeDataFromFirebase?.features?.length || 0
+    })
+
+    if (mapLoaded && map.current && !firebaseLoading) {
+      // Verificar que el mapa esté completamente listo
+      if (!map.current.isStyleLoaded()) {
+        console.log('⏳ Mapa no está completamente listo, esperando...')
+        const checkStyleLoaded = () => {
+          if (map.current && map.current.isStyleLoaded()) {
+            console.log('✅ Mapa listo, añadiendo capas...')
+            addHeatmapLayers()
+          } else {
+            setTimeout(checkStyleLoaded, 100)
+          }
+        }
+        checkStyleLoaded()
+        return
+      }
+
       console.log('🎨 Añadiendo capas del mapa con datos de Firebase...')
       // Usar setTimeout para asegurar que el mapa esté completamente listo
       setTimeout(() => {
         addHeatmapLayers()
-      }, 500)
+      }, 200)
     }
   }, [crimeDataFromFirebase, firebaseLoading, mapLoaded])
+
+  // Efecto para verificar periódicamente que las capas estén presentes
+  useEffect(() => {
+    if (!mapLoaded || !map.current) return
+
+    const checkLayersInterval = setInterval(() => {
+      if (map.current && map.current.isStyleLoaded()) {
+        const hasHeatmap = map.current.getLayer('crime-heatmap')
+        const hasPoints = map.current.getLayer('crime-points')
+        const hasData = crimeDataFromFirebase && crimeDataFromFirebase.features.length > 0
+        
+        if (hasData && (!hasHeatmap || !hasPoints)) {
+          console.log('🔄 Capas perdidas detectadas, recargando...')
+          addHeatmapLayers()
+        }
+      }
+    }, 5000) // Verificar cada 5 segundos
+
+    return () => clearInterval(checkLayersInterval)
+  }, [mapLoaded, crimeDataFromFirebase])
 
   // Efecto para detectar cuando el contenedor está listo
   useEffect(() => {
@@ -416,6 +665,22 @@ export default function MapPage() {
           map.current.on('zoom', updateZoomButtons)
           updateZoomButtons()
           
+          // Añadir evento para recargar capas cuando sea necesario
+          map.current.on('zoomend', () => {
+            // Verificar si las capas siguen visibles después del zoom
+            setTimeout(() => {
+              if (map.current && map.current.isStyleLoaded()) {
+                const hasHeatmap = map.current.getLayer('crime-heatmap')
+                const hasPoints = map.current.getLayer('crime-points')
+                
+                if (!hasHeatmap || !hasPoints) {
+                  console.log('🔄 Capas perdidas después del zoom, recargando...')
+                  addHeatmapLayers()
+                }
+              }
+            }, 100)
+          })
+          
           console.log('✅ Eventos del mapa configurados')
         } catch (error) {
           console.error('❌ Error inicializando mapa:', error)
@@ -448,38 +713,57 @@ export default function MapPage() {
     }
   }, [containerReady])
 
-  // Función para añadir las capas del mapa de calor
+  // Función para añadir las capas del mapa de calor - MEJORADA
   const addHeatmapLayers = () => {
-    if (!map.current || !map.current.isStyleLoaded()) {
-      console.log('Map not ready for layers')
+    console.log('🎨 Iniciando addHeatmapLayers...')
+    
+    if (!map.current) {
+      console.log('❌ Mapa no existe')
+      return
+    }
+
+    if (!map.current.isStyleLoaded()) {
+      console.log('❌ Estilo del mapa no está cargado')
       return
     }
 
     try {
+      console.log('🧹 Limpiando capas existentes...')
+      
       // Limpiar fuentes y capas existentes de forma segura
       if (map.current.getLayer('crime-heatmap')) {
+        console.log('🗑️ Eliminando capa crime-heatmap')
         map.current.removeLayer('crime-heatmap')
       }
       if (map.current.getLayer('crime-points')) {
+        console.log('🗑️ Eliminando capa crime-points')
         map.current.removeLayer('crime-points')
       }
       if (map.current.getSource('crime-data')) {
+        console.log('🗑️ Eliminando fuente crime-data')
         map.current.removeSource('crime-data')
       }
 
       // Obtener datos y verificar que hay datos disponibles
       const dataToUse = getCrimeDataToUse()
+      console.log('📊 Datos a usar:', {
+        hasData: !!dataToUse,
+        featuresCount: dataToUse?.features?.length || 0,
+        dataType: typeof dataToUse
+      })
+      
       if (!dataToUse || !dataToUse.features || dataToUse.features.length === 0) {
-        console.log('No crime data available to display')
+        console.log('⚠️ No hay datos de crimen disponibles para mostrar')
         return
       }
 
+      console.log('➕ Añadiendo fuente de datos...')
       // Añadir fuente de datos para el mapa de calor
       map.current.addSource('crime-data', {
         type: 'geojson',
         data: dataToUse as any
       })
-      console.log(`Crime data source added successfully with ${dataToUse.features.length} features`)
+      console.log(`✅ Fuente de datos añadida exitosamente con ${dataToUse.features.length} características`)
 
       // Añadir capa de mapa de calor - prominente desde lejos
       map.current.addLayer({
@@ -574,7 +858,7 @@ export default function MapPage() {
         }
       })
 
-      console.log('Heatmap layers added successfully')
+      console.log('✅ Capas del mapa de calor añadidas exitosamente')
 
       // Añadir eventos de click a los puntos de crimen
       map.current.on('click', 'crime-points', (e) => {
@@ -594,6 +878,9 @@ export default function MapPage() {
                 <div class="crime-header">
                   <h3>${properties.city || 'Unknown'}</h3>
                   <span class="risk-badge ${properties.risk?.toLowerCase().replace(' ', '-') || 'unknown'}">${properties.risk || 'Unknown'} Risk</span>
+                </div>
+                <div class="crime-location">
+                  <strong>📍 ${properties.city || 'Unknown'}, ${properties.country || 'Unknown Country'}</strong>
                 </div>
                 <div class="crime-details">
                   <div class="incident-info">
@@ -625,7 +912,16 @@ export default function MapPage() {
       })
 
     } catch (error) {
-      console.error('Error adding heatmap layers:', error)
+      console.error('❌ Error añadiendo capas del mapa de calor:', error)
+      console.error('Detalles del error:', error)
+      
+      // Intentar reintentar después de un breve delay
+      setTimeout(() => {
+        console.log('🔄 Reintentando añadir capas...')
+        if (map.current && map.current.isStyleLoaded()) {
+          addHeatmapLayers()
+        }
+      }, 1000)
     }
   }
 
@@ -643,17 +939,31 @@ export default function MapPage() {
   }
 
 
-  // Funciones para el buscador
+  // Funciones para el buscador - MEJORADA con ciudades dinámicas globales
   const handleSearch = (query: string) => {
     setSearchQuery(query)
     if (query.length > 0) {
-      const results = germanCities.filter(city => 
-        city.name.toLowerCase().includes(query.toLowerCase()) ||
-        city.state.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 8) // Mostrar máximo 8 resultados
+      // Usar ciudades dinámicas de Firebase si están disponibles, sino usar la lista estática como fallback
+      const citiesToSearch = dynamicCities.length > 0 ? dynamicCities : germanCities
+      
+      const results = citiesToSearch.filter(city => {
+        const cityName = city.name?.toLowerCase() || ''
+        const cityCountry = city.country?.toLowerCase() || city.state?.toLowerCase() || ''
+        const searchQuery = query.toLowerCase()
+        
+        // Buscar en nombre de ciudad, país, o combinación ciudad, país
+        const fullLocation = `${cityName} ${cityCountry}`.toLowerCase()
+        
+        return cityName.includes(searchQuery) || 
+               cityCountry.includes(searchQuery) || 
+               fullLocation.includes(searchQuery)
+      }).slice(0, 8) // Mostrar máximo 8 resultados
+      
       setSearchResults(results)
+      setShowSearchResults(results.length > 0)
     } else {
       setSearchResults([])
+      setShowSearchResults(false)
     }
   }
 
@@ -772,7 +1082,6 @@ export default function MapPage() {
     )
   }
 
-
   // Mostrar loading solo brevemente mientras se verifica la autenticación
   if (loading) {
     console.log('⏳ Verificando autenticación...')
@@ -810,24 +1119,24 @@ export default function MapPage() {
       {!hasToken && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
           <div className="text-center">
-            <p className="text-white text-xl mb-4">⚠️ Token de Mapbox requerido</p>
+            <p className="text-white text-xl mb-4">⚠️ Mapbox Token Required</p>
             <p className="text-white/70 text-sm max-w-md">
-              Para mostrar el mapa, necesitas configurar tu token de Mapbox.<br/>
-              Crea un archivo <code className="bg-white/10 px-2 py-1 rounded">.env.local</code> en la raíz del proyecto y añade:<br/>
+              To display the map, you need to configure your Mapbox token.<br/>
+              Create a <code className="bg-white/10 px-2 py-1 rounded">.env.local</code> file in the project root and add:<br/>
               <code className="bg-white/10 px-2 py-1 rounded block mt-2">
-                NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=tu_token_aqui
+                NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_token_here
               </code>
               <br/><br/>
-              Obtén tu token gratuito en: <a href="https://account.mapbox.com/access-tokens/" target="_blank" className="text-blue-400 hover:text-blue-300">mapbox.com</a>
+              Get your free token at: <a href="https://account.mapbox.com/access-tokens/" target="_blank" className="text-blue-400 hover:text-blue-300">mapbox.com</a>
             </p>
           </div>
         </div>
       )}
       
-      {/* Controles del mapa */}
+      {/* Map controls */}
       {mapLoaded && (
         <div className="map-controls-container">
-          {/* Botón de ubicación */}
+          {/* Location button */}
           <button
             onClick={handleGetLocation}
             className={`map-control-bubble ${isLocating ? 'locating' : ''}`}
@@ -837,7 +1146,7 @@ export default function MapPage() {
             {isLocating ? '⟳' : '📍'}
           </button>
 
-          {/* Botón para añadir crimen */}
+          {/* Add crime button */}
           <button
             onClick={openAddCrimeModal}
             className="map-control-bubble"
@@ -846,7 +1155,7 @@ export default function MapPage() {
             🚨
           </button>
 
-          {/* Botón de logout */}
+          {/* Logout button */}
           <button
             onClick={handleLogout}
             className="map-control-bubble"
@@ -855,7 +1164,7 @@ export default function MapPage() {
             🚪
           </button>
           
-          {/* Controles de zoom */}
+          {/* Zoom controls */}
           <div className="zoom-controls">
             <button
               onClick={handleZoomIn}
@@ -875,31 +1184,31 @@ export default function MapPage() {
         </div>
       )}
 
-      {/* Mensaje de error de ubicación */}
+      {/* Location error message */}
       {locationError && (
         <div className="absolute top-20 right-20 bg-red-500/90 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm z-50 max-w-xs">
           {locationError}
         </div>
       )}
 
-      {/* Indicador de carga de Firebase */}
+      {/* Firebase loading indicator */}
       {firebaseLoading && (
         <div className="absolute top-20 left-20 bg-blue-500/90 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm z-50 max-w-xs">
-          🔄 Cargando datos de Firebase...
+          🔄 Loading Firebase data...
         </div>
       )}
 
-      {/* Indicador de fuente de datos */}
+      {/* Data source indicator */}
       {!firebaseLoading && mapLoaded && (
         <div className="absolute top-20 left-20 bg-green-500/90 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm z-50 max-w-xs">
           {crimeDataFromFirebase && crimeDataFromFirebase.features.length > 0 ? 
-            `✅ Firebase (${crimeDataFromFirebase.features.length} puntos)` : 
-            '⚠️ Cargando datos...'
+            `✅ Firebase (${crimeDataFromFirebase.features.length} points)` : 
+            '⚠️ Loading data...'
           }
         </div>
       )}
 
-      {/* Indicador de usuario autenticado */}
+      {/* Authenticated user indicator */}
       {user && (
         <div className="absolute top-20 right-20 bg-blue-500/90 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm z-50 max-w-xs">
           👤 {user.email}
@@ -908,7 +1217,7 @@ export default function MapPage() {
 
 
 
-      {/* Buscador de ciudades - más corto */}
+      {/* City search - Global */}
       <div style={{ 
         position: 'absolute', 
         bottom: '0px', 
@@ -926,10 +1235,23 @@ export default function MapPage() {
         transform: 'translateY(0)',
         transition: 'all 0.3s ease'
       }}>
+        {dynamicCities.length > 0 && (
+          <div style={{
+            fontSize: '10px',
+            color: '#6b7280',
+            marginBottom: '6px',
+            fontWeight: '500',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}>
+            🌍 Global Crime Data ({dynamicCities.length} cities)
+          </div>
+        )}
         <div style={{ position: 'relative' }}>
           <input
             type="text"
-            placeholder="Search city..."
+            placeholder={dynamicCities.length > 0 ? "Search cities with incidents..." : "Search city or country..."}
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             style={{
@@ -971,7 +1293,7 @@ export default function MapPage() {
         {searchResults.length > 0 && (
           <div style={{
             marginTop: '8px',
-            maxHeight: '150px',
+            maxHeight: '180px',
             overflowY: 'auto',
             borderTop: '1px solid rgba(0, 0, 0, 0.08)',
             borderRadius: '6px',
@@ -982,7 +1304,7 @@ export default function MapPage() {
                 key={index}
                 onClick={() => handleCitySelect(city)}
                 style={{
-                  padding: '8px 12px',
+                  padding: '10px 12px',
                   cursor: 'pointer',
                   borderBottom: index < searchResults.length - 1 ? '1px solid rgba(0, 0, 0, 0.05)' : 'none',
                   backgroundColor: 'transparent',
@@ -999,16 +1321,47 @@ export default function MapPage() {
                   fontWeight: '500', 
                   color: '#1f2937', 
                   fontSize: '13px',
-                  marginBottom: '1px'
+                  marginBottom: '2px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
                 }}>
-                  {city.name}
+                  <span>{city.name}</span>
+                  {city.crimeCount && (
+                    <span style={{
+                      fontSize: '10px',
+                      backgroundColor: '#ef4444',
+                      color: 'white',
+                      padding: '2px 6px',
+                      borderRadius: '8px',
+                      fontWeight: '600'
+                    }}>
+                      {city.crimeCount}
+                    </span>
+                  )}
                 </div>
                 <div style={{ 
                   fontSize: '11px', 
                   color: '#6b7280',
-                  fontWeight: '400'
+                  fontWeight: '400',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
                 }}>
-                  {city.state}
+                  <span>🌍 {city.country || city.state}</span>
+                  {city.riskLevel && (
+                    <span style={{
+                      fontSize: '9px',
+                      backgroundColor: city.riskLevel === 'High' || city.riskLevel === 'Very High' ? '#ef4444' : 
+                                       city.riskLevel === 'Medium' ? '#f59e0b' : '#10b981',
+                      color: 'white',
+                      padding: '1px 4px',
+                      borderRadius: '4px',
+                      fontWeight: '500'
+                    }}>
+                      {city.riskLevel}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
@@ -1043,10 +1396,10 @@ export default function MapPage() {
         </div>
       )}
 
-      {/* Modal para reportar incidente */}
+       {/* Report incident modal */}
       {showAddCrimeModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4" 
+          className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4" 
           style={{ 
             zIndex: 9999,
             position: 'fixed',
@@ -1054,226 +1407,114 @@ export default function MapPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            backdropFilter: 'blur(6px)'
+            backdropFilter: 'blur(8px)'
           }}
           onClick={closeAddCrimeModal}
         >
           <div 
-            className="bg-white rounded-2xl shadow-2xl w-[700px] h-[620px] overflow-hidden"
-            style={{ 
-              zIndex: 10000,
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.12)'
-            }}
+            className="crime-modal"
+             style={{ height: '520px', width: '600px' }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header del modal */}
-            <div className="px-8 py-8 bg-white">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900">Reportar Incidente</h2>
-                  <p className="text-lg text-gray-500 mt-2">Paso {currentStep} de 3</p>
-                </div>
-                <button
-                  onClick={closeAddCrimeModal}
-                  className="w-12 h-12 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 text-2xl transition-colors duration-200"
-                  disabled={isAddingCrime}
-                >
-                  ×
-                </button>
+             {/* Modal header */}
+            <div className="crime-modal-header">
+              <div>
+                 <h2 className="crime-modal-title">Report Incident</h2>
+                 <p className="crime-modal-subtitle">Quick Report - Your location detected automatically</p>
               </div>
+              <button
+                onClick={closeAddCrimeModal}
+                className="crime-modal-close"
+                disabled={isAddingCrime}
+              >
+                ×
+              </button>
             </div>
 
-            {/* Contenido del modal */}
-            <div className="px-8 pb-8 flex-1 overflow-y-auto">
-              {currentStep === 1 && (
-                <div className="h-full flex flex-col">
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Tipo de Incidente</h3>
-                    <p className="text-gray-600">Selecciona el tipo de incidente</p>
+             {/* Modal content - Single Step */}
+            <div className="crime-modal-content">
+               {showSuccessMessage ? (
+                 <div className="h-full flex flex-col items-center justify-center text-center">
+                   <div className="mb-6">
+                     <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                       <span className="text-white text-2xl">✓</span>
                   </div>
-                  
-                  {/* Grid de tipos de incidentes */}
-                  <div className="grid grid-cols-3 gap-3 flex-1">
+                     <h3 className="crime-section-title mb-2">Report Submitted Successfully!</h3>
+                     <p className="crime-section-subtitle">
+                       Your incident has been added to the map and is now visible to other users.
+                     </p>
+                   </div>
+                 </div>
+               ) : (
+                 <div className="h-full flex flex-col">
+                   {/* Incident Type Selection */}
+                   <div className="mb-6">
+                     <h3 className="crime-section-title mb-4">Select Incident Type *</h3>
+                     <div className="grid grid-cols-3 gap-3">
                     {incidentTypes.map((incident) => (
                       <button
                         key={incident.id}
                         onClick={() => selectIncidentType(incident.name)}
-                        className="bg-white border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 rounded-xl p-4 text-center transition-all duration-200 hover:scale-105"
+                        className="crime-incident-button"
+                           style={{
+                             border: newCrimePoint.incident === incident.name ? '2px solid #3b82f6' : '1px solid rgba(156, 163, 175, 0.3)',
+                             backgroundColor: newCrimePoint.incident === incident.name ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255, 255, 255, 0.8)'
+                           }}
+                           disabled={isAddingCrime}
                       >
-                        <div className="text-3xl mb-2">{incident.icon}</div>
-                        <div className="text-sm font-medium text-gray-700">{incident.name}</div>
+                           <span className="crime-incident-icon">{incident.icon}</span>
+                           <span className="crime-incident-text">{incident.name}</span>
                       </button>
                     ))}
                   </div>
                 </div>
-              )}
 
-              {currentStep === 2 && (
-                <div className="h-full flex flex-col">
-                  <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Ubicación y Detalles</h3>
-                    <p className="text-gray-600">Proporciona información básica</p>
-                  </div>
-                  
-                  <div className="space-y-6 flex-1">
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Ciudad *
-                        </label>
-                        <input
-                          type="text"
-                          value={newCrimePoint.city}
-                          onChange={(e) => setNewCrimePoint({...newCrimePoint, city: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Ej: Berlin, Munich, Hamburg..."
-                          required
-                          disabled={isAddingCrime}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Nivel de Riesgo
-                        </label>
-                        <select
-                          value={newCrimePoint.risk}
-                          onChange={(e) => setNewCrimePoint({...newCrimePoint, risk: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          disabled={isAddingCrime}
-                        >
-                          <option value="Low">🟢 Bajo</option>
-                          <option value="Medium">🟡 Medio</option>
-                          <option value="High">🔴 Alto</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Descripción *
+                   {/* Details Input */}
+                   <div className="flex-1">
+                      <div className="crime-input-group">
+                        <label className="crime-label">
+                         Incident Details *
                       </label>
                       <textarea
                         value={newCrimePoint.details}
                         onChange={(e) => setNewCrimePoint({...newCrimePoint, details: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                        placeholder="Describe brevemente el incidente..."
+                        className="crime-input"
+                         placeholder="Describe what happened..."
                         rows={4}
                         required
                         disabled={isAddingCrime}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Intensidad: {newCrimePoint.intensity}
-                      </label>
-                      <input
-                        type="range"
-                        min="0.1"
-                        max="1.0"
-                        step="0.1"
-                        value={newCrimePoint.intensity}
-                        onChange={(e) => setNewCrimePoint({...newCrimePoint, intensity: parseFloat(e.target.value)})}
-                        className="w-full"
-                        disabled={isAddingCrime}
+                         style={{ resize: 'vertical', minHeight: '100px' }}
                       />
                     </div>
                   </div>
                 </div>
               )}
-
-              {currentStep === 3 && (
-                <div className="h-full flex flex-col">
-                  <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Confirmar y Enviar</h3>
-                    <p className="text-gray-600">Revisa la información antes de enviar</p>
                   </div>
                   
-                  <div className="bg-gray-50 rounded-lg p-8 flex-1">
-                    <h4 className="text-xl font-semibold text-gray-900 mb-6">Resumen del Incidente</h4>
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm text-gray-500 mb-1">Tipo de Incidente</div>
-                          <div className="font-semibold text-gray-900">{newCrimePoint.incident || 'No seleccionado'}</div>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm text-gray-500 mb-1">Ciudad</div>
-                          <div className="font-semibold text-gray-900">{newCrimePoint.city || 'No especificada'}</div>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm text-gray-500 mb-1">Nivel de Riesgo</div>
-                          <div className="font-semibold text-gray-900">{newCrimePoint.risk}</div>
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm text-gray-500 mb-1">Intensidad</div>
-                          <div className="font-semibold text-gray-900">{newCrimePoint.intensity}</div>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm col-span-1">
-                          <div className="text-sm text-gray-500 mb-1">Descripción</div>
-                          <div className="font-semibold text-gray-900">{newCrimePoint.details || 'No especificada'}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="text-center mt-6">
-                    <p className="text-base text-gray-600">
-                      Al enviar, este incidente será agregado al mapa y visible para otros usuarios.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Footer con botones limpios */}
-            <div className="bg-white border-t border-gray-200 p-6">
+             {/* Footer with buttons */}
+             {!showSuccessMessage && (
+            <div className="crime-modal-footer">
               <div className="flex gap-3">
-                {currentStep > 1 && (
                   <button
                     type="button"
-                    onClick={prevStep}
-                    className="px-4 py-2 text-gray-600 font-medium bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+                     onClick={closeAddCrimeModal}
+                    className="crime-button"
                     disabled={isAddingCrime}
                   >
-                    Atrás
+                     Cancel
                   </button>
-                )}
-                
-                <button
-                  type="button"
-                  onClick={closeAddCrimeModal}
-                  className={`px-4 py-2 text-gray-600 font-medium bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 ${
-                    currentStep > 1 ? '' : 'flex-1'
-                  }`}
-                  disabled={isAddingCrime}
-                >
-                  Cancelar
-                </button>
-
-                {currentStep < 3 ? (
-                  <button
-                    type="button"
-                    onClick={nextStep}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                    disabled={isAddingCrime}
-                  >
-                    Siguiente
-                  </button>
-                ) : (
+                   
                   <button
                     type="button"
                     onClick={handleAddCrimePoint}
-                    disabled={isAddingCrime || !newCrimePoint.city || !newCrimePoint.details}
-                    className="flex-1 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                     disabled={isAddingCrime || !newCrimePoint.incident || !newCrimePoint.details}
+                    className="crime-button flex-1"
                   >
-                    {isAddingCrime ? 'Enviando...' : 'Enviar Incidente'}
+                     {isAddingCrime ? 'Submitting...' : 'Submit Report'}
                   </button>
-                )}
               </div>
             </div>
+             )}
           </div>
         </div>
       )}
