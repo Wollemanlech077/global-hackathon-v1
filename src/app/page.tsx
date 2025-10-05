@@ -232,16 +232,16 @@ export default function Home() {
               paddingTop: '0.625rem',
               paddingBottom: '0.625rem',
               borderRadius: '25px',
-              color: scrollPosition === 0 ? '#FFFFFF' : (scrollPosition === 3 ? '#1E293B' : '#CBD5E1'),
-              fontWeight: scrollPosition === 0 ? '400' : (scrollPosition === 3 ? '400' : '200'),
+              color: scrollPosition === 0 ? '#FFFFFF' : (scrollPosition === 3 ? '#334155' : '#CBD5E1'),
+              fontWeight: scrollPosition === 0 ? '400' : (scrollPosition === 3 ? '500' : '200'),
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
               border: scrollPosition === 0 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
               boxShadow: scrollPosition === 0 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none',
-              opacity: scrollPosition === 0 ? 1 : (scrollPosition === 3 ? 0.8 : 0.5),
+              opacity: scrollPosition === 0 ? 1 : (scrollPosition === 3 ? 0.9 : 0.5),
               transition: 'all 0.3s ease',
               cursor: 'pointer',
-              textShadow: scrollPosition === 3 ? '0 1px 2px rgba(255, 255, 255, 0.8)' : 'none'
+              textShadow: scrollPosition === 3 ? '0 1px 3px rgba(255, 255, 255, 0.5)' : 'none'
             }}
             onClick={() => setScrollPosition(0)}
             onMouseEnter={(e) => {
@@ -264,11 +264,11 @@ export default function Home() {
           <span 
             className="nav-item"
             style={{ 
-              color: scrollPosition === 1 ? '#FFFFFF' : (scrollPosition === 3 ? '#1E293B' : '#CBD5E1'),
-              opacity: scrollPosition === 1 ? 1 : (scrollPosition === 3 ? 0.8 : 0.5),
+              color: scrollPosition === 1 ? '#FFFFFF' : (scrollPosition === 3 ? '#334155' : '#CBD5E1'),
+              opacity: scrollPosition === 1 ? 1 : (scrollPosition === 3 ? 0.9 : 0.5),
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontWeight: scrollPosition === 1 ? '400' : (scrollPosition === 3 ? '400' : '200'),
+              fontWeight: scrollPosition === 1 ? '400' : (scrollPosition === 3 ? '500' : '200'),
               paddingLeft: '1.5rem',
               paddingRight: '1.5rem',
               paddingTop: '0.625rem',
@@ -279,7 +279,7 @@ export default function Home() {
               background: scrollPosition === 1 ? 'rgba(255, 255, 255, 0.25)' : 'transparent',
               border: scrollPosition === 1 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
               boxShadow: scrollPosition === 1 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none',
-              textShadow: scrollPosition === 3 ? '0 1px 2px rgba(255, 255, 255, 0.8)' : 'none'
+              textShadow: scrollPosition === 3 ? '0 1px 3px rgba(255, 255, 255, 0.5)' : 'none'
             }}
             onClick={() => setScrollPosition(1)}
             onMouseEnter={(e) => {
@@ -300,11 +300,11 @@ export default function Home() {
           <span 
             className="nav-item"
             style={{ 
-              color: scrollPosition === 2 ? '#FFFFFF' : (scrollPosition === 3 ? '#1E293B' : '#CBD5E1'),
-              opacity: scrollPosition === 2 ? 1 : (scrollPosition === 3 ? 0.8 : 0.5),
+              color: scrollPosition === 2 ? '#FFFFFF' : (scrollPosition === 3 ? '#334155' : '#CBD5E1'),
+              opacity: scrollPosition === 2 ? 1 : (scrollPosition === 3 ? 0.9 : 0.5),
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontWeight: scrollPosition === 2 ? '400' : (scrollPosition === 3 ? '400' : '200'),
+              fontWeight: scrollPosition === 2 ? '400' : (scrollPosition === 3 ? '500' : '200'),
               paddingLeft: '1.5rem',
               paddingRight: '1.5rem',
               paddingTop: '0.625rem',
@@ -315,7 +315,7 @@ export default function Home() {
               background: scrollPosition === 2 ? 'rgba(255, 255, 255, 0.25)' : 'transparent',
               border: scrollPosition === 2 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
               boxShadow: scrollPosition === 2 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none',
-              textShadow: scrollPosition === 3 ? '0 1px 2px rgba(255, 255, 255, 0.8)' : 'none'
+              textShadow: scrollPosition === 3 ? '0 1px 3px rgba(255, 255, 255, 0.5)' : 'none'
             }}
             onClick={() => setScrollPosition(2)}
             onMouseEnter={(e) => {
@@ -336,11 +336,11 @@ export default function Home() {
           <span 
             className="nav-item"
             style={{ 
-              color: scrollPosition === 3 ? '#FFFFFF' : '#CBD5E1',
+              color: scrollPosition === 3 ? '#334155' : '#CBD5E1',
               opacity: scrollPosition === 3 ? 1 : 0.5,
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontWeight: scrollPosition === 3 ? '400' : '200',
+              fontWeight: scrollPosition === 3 ? '600' : '200',
               paddingLeft: '1.5rem',
               paddingRight: '1.5rem',
               paddingTop: '0.625rem',
@@ -348,9 +348,10 @@ export default function Home() {
               borderRadius: '25px',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              background: scrollPosition === 3 ? 'rgba(255, 255, 255, 0.3)' : 'transparent',
-              border: scrollPosition === 3 ? '1px solid rgba(255, 255, 255, 0.5)' : 'none',
-              boxShadow: scrollPosition === 3 ? '0 4px 12px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4)' : 'none'
+              background: scrollPosition === 3 ? 'rgba(255, 255, 255, 0.35)' : 'transparent',
+              border: scrollPosition === 3 ? '1px solid rgba(255, 255, 255, 0.6)' : 'none',
+              boxShadow: scrollPosition === 3 ? '0 4px 12px rgba(255, 255, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5)' : 'none',
+              textShadow: scrollPosition === 3 ? '0 1px 3px rgba(255, 255, 255, 0.8)' : 'none'
             }}
             onClick={() => setScrollPosition(3)}
             onMouseEnter={(e) => {
@@ -421,7 +422,9 @@ export default function Home() {
           WebkitBackdropFilter: scrollPosition === 3 ? 'blur(40px) saturate(180%)' : 'blur(20px)',
           boxShadow: scrollPosition === 3 ? '0 8px 40px rgba(168, 218, 255, 0.4), 0 4px 20px rgba(245, 182, 255, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.4), inset 0 -2px 10px rgba(255, 255, 255, 0.2)' : '0 4px 16px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.2)',
           border: scrollPosition === 3 ? '2px solid rgba(255, 255, 255, 0.5)' : '1px solid rgba(255, 255, 255, 0.3)',
-          transition: 'all 0.5s ease'
+          transition: 'all 0.5s ease',
+          color: scrollPosition === 3 ? '#334155' : 'white',
+          fontWeight: scrollPosition === 3 ? '500' : '200'
         }}>
           <span className="button-text">Explore the portal</span>
           <span className="arrow-circle">→</span>
@@ -1171,16 +1174,26 @@ export default function Home() {
                     width: '120px',
                     height: '120px',
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, rgba(100, 116, 139, 0.15), rgba(71, 85, 105, 0.1))',
                     border: '3px solid rgba(71, 85, 105, 0.25)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginBottom: '1.5rem',
-                    fontSize: '3rem',
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5)'
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5)',
+                    overflow: 'hidden'
                   }}>
-                    👨‍💻
+                    <Image 
+                      src="/carlos.jpeg" 
+                      alt="Carlos Zendejas" 
+                      width={120}
+                      height={120}
+                      style={{
+                        objectFit: 'cover',
+                        width: '100%',
+                        height: '100%',
+                        objectPosition: 'center 60%'
+                      }}
+                    />
                   </div>
                   <h3 style={{
                     fontSize: '1.5rem',
@@ -1190,6 +1203,53 @@ export default function Home() {
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
                     textShadow: 'none'
                   }}>Carlos Zendejas</h3>
+                  
+                  {/* Social Icons */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '1rem',
+                    marginTop: '0.75rem',
+                    alignItems: 'center'
+                  }}>
+                    <a href="https://www.instagram.com/carlos5658/" target="_blank" rel="noopener noreferrer" style={{
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }} onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.2)';
+                    }} onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}>
+                      <Image 
+                        src="/instagram.jpg" 
+                        alt="Instagram" 
+                        width={50}
+                        height={50}
+                        style={{
+                          objectFit: 'contain'
+                        }}
+                      />
+                    </a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" style={{
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }} onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.2)';
+                    }} onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}>
+                      <Image 
+                        src="/linkedin.jpg" 
+                        alt="LinkedIn" 
+                        width={28}
+                        height={28}
+                        style={{
+                          objectFit: 'contain'
+                        }}
+                      />
+                    </a>
+                  </div>
             </div>
 
             {/* Video en el medio */}
@@ -1234,16 +1294,26 @@ export default function Home() {
                     width: '120px',
                     height: '120px',
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, rgba(100, 116, 139, 0.15), rgba(71, 85, 105, 0.1))',
                     border: '3px solid rgba(71, 85, 105, 0.25)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginBottom: '1.5rem',
-                    fontSize: '3rem',
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5)'
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5)',
+                    overflow: 'hidden'
                   }}>
-                    🎨
+                    <Image 
+                      src="/arturo.jpeg" 
+                      alt="Arturo Ordaz" 
+                      width={120}
+                      height={120}
+                      style={{
+                        objectFit: 'cover',
+                        width: '100%',
+                        height: '100%',
+                        objectPosition: 'center 60%'
+                      }}
+                    />
                   </div>
                   <h3 style={{
                     fontSize: '1.5rem',
@@ -1253,6 +1323,53 @@ export default function Home() {
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
                     textShadow: 'none'
                   }}>Arturo Ordaz</h3>
+                  
+                  {/* Social Icons */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '1rem',
+                    marginTop: '0.75rem',
+                    alignItems: 'center'
+                  }}>
+                    <a href="https://www.instagram.com/by.arturo_/" target="_blank" rel="noopener noreferrer" style={{
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }} onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.2)';
+                    }} onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}>
+                      <Image 
+                        src="/instagram.jpg" 
+                        alt="Instagram" 
+                        width={50}
+                        height={50}
+                        style={{
+                          objectFit: 'contain'
+                        }}
+                      />
+                    </a>
+                    <a href="https://www.linkedin.com/in/arturo-o-41371424a/" target="_blank" rel="noopener noreferrer" style={{
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }} onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.2)';
+                    }} onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}>
+                      <Image 
+                        src="/linkedin.jpg" 
+                        alt="LinkedIn" 
+                        width={28}
+                        height={28}
+                        style={{
+                          objectFit: 'contain'
+                        }}
+                      />
+                    </a>
+                  </div>
             </div>
 
           </div>
