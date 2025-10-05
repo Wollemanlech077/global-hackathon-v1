@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Mapbox Simple</title>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    </style>
+</head>
+<body>
+    <div id='map'></div>
+    <script>
+        console.log('🗺️ Iniciando test simple de Mapbox...')
+        
+        mapboxgl.accessToken = 'pk.eyJ1Ijoid29sbGVtYW5sZWNoNyIsImEiOiJjbWdjZ2JlaHgwM2x4MmxvaXo3NTc1dmJzIn0.SH5AqFeBIbNX7wCLQUM2fQ';
+        
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/light-v11',
+            center: [10.4515, 51.1657],
+            zoom: 5.5
+        });
+
+        map.on('load', () => {
+            console.log('✅ Mapa cargado exitosamente en test simple')
+        });
+
+        map.on('error', (e) => {
+            console.error('❌ Error en test simple:', e)
+        });
+    </script>
+</body>
+</html>

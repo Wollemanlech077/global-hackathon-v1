@@ -693,10 +693,14 @@ html, body {
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 16px 48px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-width: 400px;
-  max-height: 90vh;
+  max-width: 480px;
+  min-width: 420px;
+  max-height: 80vh;
   overflow-y: auto;
+  overflow-x: hidden;
   animation: modalSlideIn 0.3s ease-out;
+  margin: 0 auto;
+  position: relative;
 }
 
 @keyframes modalSlideIn {
@@ -884,4 +888,30 @@ html, body {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none !important;
+}
+
+/* Estilos responsivos para modales de autenticación */
+@media (max-width: 640px) {
+  .auth-modal {
+    max-width: 90vw;
+    min-width: 300px;
+    margin: 20px auto;
+    max-height: 75vh;
+  }
+  
+  .auth-modal-header {
+    padding: 20px 20px 0;
+  }
+  
+  .auth-modal-content {
+    padding: 0 20px 20px;
+  }
+  
+  .auth-modal-footer {
+    padding: 0 20px 20px;
+  }
+  
+  .auth-input {
+    font-size: 16px; /* Evita zoom en iOS */
+  }
 }

@@ -168,24 +168,26 @@ export default function AuthPage() {
       }}
     >
       {/* Bottom Section */}
-      <div className="flex justify-center items-center pb-20">
-        <div className="flex gap-4">
-          <button className="portal-button" onClick={openLoginModal}>
-            <span className="button-text">Sign In</span>
-            <span className="arrow-circle">→</span>
-          </button>
-          
-          <button className="portal-button" onClick={openRegisterModal}>
-            <span className="button-text">Create Account</span>
-            <span className="arrow-circle">+</span>
-          </button>
+      {!showLoginModal && !showRegisterModal && (
+        <div className="flex justify-center items-center pb-20">
+          <div className="flex gap-4">
+            <button className="portal-button" onClick={openLoginModal}>
+              <span className="button-text">Sign In</span>
+              <span className="arrow-circle">→</span>
+            </button>
+            
+            <button className="portal-button" onClick={openRegisterModal}>
+              <span className="button-text">Create Account</span>
+              <span className="arrow-circle">+</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Modal de Login */}
       {showLoginModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-end pb-40" 
+          className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-start pt-32" 
           style={{ 
             zIndex: 9999,
             backdropFilter: 'blur(8px)'
@@ -267,7 +269,7 @@ export default function AuthPage() {
       {/* Modal de Registro */}
       {showRegisterModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-end pb-40" 
+          className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-start pt-32" 
           style={{ 
             zIndex: 9999,
             backdropFilter: 'blur(8px)'

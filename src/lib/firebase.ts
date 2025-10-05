@@ -6,13 +6,13 @@ import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyD_KrwxHAOzZPAFwhhiZ3WTE7cOQslkhMw",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "riskgrid-9f3f7.firebaseapp.com",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "riskgrid-9f3f7",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "riskgrid-9f3f7.firebasestorage.app",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "932152803623",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:932152803623:web:2792670fc0173cb718e902",
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-BPJ4KR9ZDD"
+  apiKey: "AIzaSyD_KrwxHAOzZPAFwhhiZ3WTE7cOQslkhMw",
+  authDomain: "riskgrid-9f3f7.firebaseapp.com",
+  projectId: "riskgrid-9f3f7",
+  storageBucket: "riskgrid-9f3f7.firebasestorage.app",
+  messagingSenderId: "932152803623",
+  appId: "1:932152803623:web:2792670fc0173cb718e902",
+  measurementId: "G-BPJ4KR9ZDD"
 };
 
 // Verificar que la configuración esté completa

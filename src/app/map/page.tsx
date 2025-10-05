@@ -38,6 +38,7 @@ export default function MapPage() {
     date: new Date().toISOString().split('T')[0]
   })
   const [isAddingCrime, setIsAddingCrime] = useState(false)
+  const [containerReady, setContainerReady] = useState(false)
 
   // Tipos de incidentes disponibles
   const incidentTypes = [
@@ -265,11 +266,15 @@ export default function MapPage() {
 
   // Verificar autenticación
   useEffect(() => {
+    console.log('🔐 Iniciando verificación de autenticación...')
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('🔐 Estado de autenticación cambiado:', user ? 'Usuario autenticado' : 'Usuario no autenticado')
       if (user) {
+        console.log('✅ Usuario autenticado:', user.email)
         setUser(user)
         setLoading(false)
       } else {
+        console.log('❌ Usuario no autenticado, redirigiendo...')
         setUser(null)
         setLoading(false)
         // Redirigir a la página de autenticación si no hay usuario
@@ -309,65 +314,129 @@ export default function MapPage() {
     }
   }, [crimeDataFromFirebase, firebaseLoading, mapLoaded])
 
+  // Efecto para detectar cuando el contenedor está listo
   useEffect(() => {
-    if (map.current) return // Initialize map only once
+    console.log('🔍 Verificando contenedor del mapa...')
+    console.log('mapContainer.current:', mapContainer.current)
+    console.log('user:', user)
+    console.log('loading:', loading)
     
-    const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "pk.eyJ1Ijoid29sbGVtYW5sZWNoNyIsImEiOiJjbWdjZ2JlaHgwM2x4MmxvaXo3NTc1dmJzIn0.SH5AqFeBIbNX7wCLQUM2fQ"
+    if (mapContainer.current) {
+      console.log('✅ Contenedor del mapa detectado en el DOM')
+      setContainerReady(true)
+    } else {
+      console.log('⏳ Contenedor del mapa no está listo aún')
+    }
+  }, [user, loading])
+
+  useEffect(() => {
+    if (map.current || !containerReady) return // Initialize map only once and when container is ready
+    
+    // Usar directamente el token de Mapbox que sabemos que funciona
+    const token = "pk.eyJ1Ijoid29sbGVtYW5sZWNoNyIsImEiOiJjbWdjZ2JlaHgwM2x4MmxvaXo3NTc1dmJzIn0.SH5AqFeBIbNX7wCLQUM2fQ"
+    console.log('🗺️ === INICIANDO MAPA ===')
     console.log('Mapbox token:', token ? 'Token exists' : 'Token missing')
+    console.log('Token length:', token ? token.length : 0)
     
     if (!token) {
-      console.error('Mapbox token is missing. Please add NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to your .env.local file')
+      console.error('❌ Mapbox token is missing')
       setHasToken(false)
       return
     }
     
     mapboxgl.accessToken = token
+    console.log('✅ Token configurado en mapboxgl')
 
-    if (mapContainer.current) {
-      try {
-        map.current = new mapboxgl.Map({
-          container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/light-v11',
-          center: [10.4515, 51.1657],
-          zoom: 5.5,
-          attributionControl: false
+    // Función para inicializar el mapa
+    const initializeMap = () => {
+      if (mapContainer.current) {
+        console.log('✅ Contenedor del mapa encontrado:', mapContainer.current)
+        console.log('Container dimensions:', {
+          width: mapContainer.current.offsetWidth,
+          height: mapContainer.current.offsetHeight
         })
-
-        map.current.on('load', () => {
-          console.log('Map loaded successfully')
-          setMapLoaded(true)
+        
+        try {
+          console.log('🗺️ Creando instancia del mapa...')
           
-          // Añadir el mapa de calor después de que el mapa esté completamente cargado
-          setTimeout(() => {
-            addHeatmapLayers()
-          }, 1000)
-        })
+          map.current = new mapboxgl.Map({
+            container: mapContainer.current,
+            style: 'mapbox://styles/mapbox/light-v11',
+            center: [10.4515, 51.1657],
+            zoom: 5.5,
+            attributionControl: false
+          })
 
-        map.current.on('error', (e) => {
-          console.error('Map error:', e)
-          console.error('Error details:', JSON.stringify(e, null, 2))
-        })
+          console.log('✅ Instancia del mapa creada')
 
-        // Actualizar estado de zoom
-        const updateZoomButtons = () => {
-          if (map.current) {
-            const zoom = map.current.getZoom()
-            setCanZoomIn(zoom < 22)
-            setCanZoomOut(zoom > 0)
+          map.current.on('load', () => {
+            console.log('✅ Mapa cargado exitosamente')
+            setMapLoaded(true)
+            
+            // Añadir el mapa de calor después de que el mapa esté completamente cargado
+            setTimeout(() => {
+              console.log('🎨 Añadiendo capas del mapa...')
+              addHeatmapLayers()
+            }, 1000)
+          })
+
+          map.current.on('error', (e) => {
+            console.error('❌ Error del mapa:', e)
+            console.error('Error type:', e.type)
+            console.error('Error details:', e.error)
+          })
+
+          map.current.on('style.load', () => {
+            console.log('🎨 Estilo del mapa cargado')
+          })
+
+          map.current.on('style.error', (e) => {
+            console.error('❌ Error de estilo:', e)
+          })
+
+          // Actualizar estado de zoom
+          const updateZoomButtons = () => {
+            if (map.current) {
+              const zoom = map.current.getZoom()
+              setCanZoomIn(zoom < 22)
+              setCanZoomOut(zoom > 0)
+            }
+          }
+
+          map.current.on('zoom', updateZoomButtons)
+          updateZoomButtons()
+          
+          console.log('✅ Eventos del mapa configurados')
+        } catch (error) {
+          console.error('❌ Error inicializando mapa:', error)
+          if (error instanceof Error) {
+            console.error('Error stack:', error.stack)
           }
         }
-
-        map.current.on('zoom', updateZoomButtons)
-        updateZoomButtons()
-      } catch (error) {
-        console.error('Error initializing map:', error)
+      } else {
+        console.error('❌ Contenedor del mapa no encontrado')
       }
     }
 
-    return () => {
-      map.current?.remove()
+    // Esperar a que el DOM esté listo
+    if (mapContainer.current) {
+      initializeMap()
+    } else {
+      // Si el contenedor no está listo, esperar un poco más
+      console.log('⏳ Esperando a que el contenedor esté listo...')
+      setTimeout(() => {
+        initializeMap()
+      }, 100)
     }
-  }, [])
+
+    return () => {
+      if (map.current) {
+        console.log('🗑️ Limpiando mapa...')
+        map.current.remove()
+        map.current = null
+      }
+    }
+  }, [containerReady])
 
   // Función para añadir las capas del mapa de calor
   const addHeatmapLayers = () => {
@@ -696,6 +765,7 @@ export default function MapPage() {
 
   // Mostrar loading mientras se verifica la autenticación
   if (loading) {
+    console.log('⏳ Mostrando pantalla de carga...')
     return (
       <div className="relative w-screen h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
@@ -708,12 +778,24 @@ export default function MapPage() {
 
   // Si no hay usuario, no mostrar nada (se redirigirá automáticamente)
   if (!user) {
+    console.log('❌ No hay usuario, no renderizando mapa')
     return null
   }
 
+  console.log('🎨 Renderizando componente del mapa')
+
   return (
     <div className="relative w-screen h-screen bg-gray-900">
-      <div ref={mapContainer} className="absolute inset-0" style={{ width: '100%', height: '100%' }} />
+      <div 
+        ref={mapContainer} 
+        className="absolute inset-0" 
+        style={{ 
+          width: '100%', 
+          height: '100%',
+          minWidth: '100vw',
+          minHeight: '100vh'
+        }} 
+      />
       
       
       {!hasToken && (
