@@ -1,0 +1,37 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Reglas para la colección de puntos de crimen
+    match /crimePoints/{document} {
+      // Permitir lectura a todos los usuarios autenticados y no autenticados
+      allow read: if true;
+      
+      // Permitir escritura solo a usuarios autenticados
+      allow write: if request.auth != null;
+      
+      // Para desarrollo, permitir escritura sin autenticación (temporal)
+      // allow write: if true;
+    }
+    
+    // Reglas para la colección de puntos de calor (legacy)
+    match /heatPoints/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+      // Para desarrollo: allow write: if true;
+    }
+    
+    // Reglas para otras colecciones
+    match /{document=**} {
+      // Permitir lectura a todos
+      allow read: if true;
+      
+      // Permitir escritura solo a usuarios autenticados
+      allow write: if request.auth != null;
+      
+      // Para desarrollo, permitir escritura sin autenticación (temporal)
+      // allow write: if true;
+    }
+  }
+}
+
