@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 export default function Home() {
   const router = useRouter()
   const [scrolled, setScrolled] = useState(false)
+  const [hoveredIcon, setHoveredIcon] = useState<string | null>(null)
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
@@ -92,9 +93,12 @@ export default function Home() {
           fontSize: '4.5rem',
           fontWeight: '200',
           letterSpacing: '-0.03em',
-          lineHeight: '1.1'
+          lineHeight: '1.1',
+          transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+          opacity: 1,
+          transform: 'translateY(0)'
         }}>
-          Beyond the Surface
+          {scrolled ? 'Data Becomes Sense' : 'Beyond the Surface'}
         </h1>
         <div 
           className="subtitle-tags rounded-full backdrop-blur-md border border-white/20 flex items-center" 
@@ -313,12 +317,202 @@ export default function Home() {
             color: '#CBD5E1',
             lineHeight: '1.0',
             letterSpacing: '-0.03em',
-            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
+            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+            marginBottom: '4rem'
           }}>
             Aether transforms geospatial data<br />
             into live, contextual intelligence<br />
             ready to integrate anywhere.
           </h2>
+          
+          {/* Iconos con descripciones */}
+          <div style={{
+            display: 'flex',
+            gap: '3rem',
+            marginTop: '3rem',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            {/* Living Data */}
+            <div style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Image
+                src="/graphic.png"
+                alt="Living Data"
+                width={240}
+                height={240}
+                style={{
+                  objectFit: 'contain',
+                  cursor: 'pointer',
+                  transition: 'transform 0.3s ease',
+                  transform: hoveredIcon === 'living' ? 'scale(1.1)' : 'scale(1)'
+                }}
+                onMouseEnter={() => setHoveredIcon('living')}
+                onMouseLeave={() => setHoveredIcon(null)}
+              />
+              {/* Tooltip */}
+              <div style={{
+                position: 'absolute',
+                top: '-140px',
+                left: '50%',
+                transform: hoveredIcon === 'living' ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(10px)',
+                background: 'linear-gradient(135deg, rgba(226, 232, 240, 1), rgba(203, 213, 225, 1))',
+                borderRadius: '20px',
+                padding: '1.75rem 2rem',
+                minWidth: '280px',
+                textAlign: 'center',
+                opacity: hoveredIcon === 'living' ? 1 : 0,
+                visibility: hoveredIcon === 'living' ? 'visible' : 'hidden',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                zIndex: 1000,
+                pointerEvents: 'none',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.6)'
+              }}
+              >
+                <h3 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '200',
+                  color: '#1e293b',
+                  marginBottom: '0.5rem',
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                  letterSpacing: '-0.03em'
+                }}>Living Data</h3>
+                <p style={{
+                  fontSize: '0.95rem',
+                  fontWeight: '200',
+                  color: '#475569',
+                  lineHeight: '1.5',
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                  letterSpacing: '0.01em'
+                }}>Signals that evolve in real time.</p>
+              </div>
+            </div>
+
+            {/* Adaptive Systems */}
+            <div style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Image
+                src="/build.png"
+                alt="Adaptive Systems"
+                width={240}
+                height={240}
+                style={{
+                  objectFit: 'contain',
+                  cursor: 'pointer',
+                  transition: 'transform 0.3s ease',
+                  transform: hoveredIcon === 'adaptive' ? 'scale(1.1)' : 'scale(1)'
+                }}
+                onMouseEnter={() => setHoveredIcon('adaptive')}
+                onMouseLeave={() => setHoveredIcon(null)}
+              />
+              {/* Tooltip */}
+              <div style={{
+                position: 'absolute',
+                top: '-140px',
+                left: '50%',
+                transform: hoveredIcon === 'adaptive' ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(10px)',
+                background: 'linear-gradient(135deg, rgba(226, 232, 240, 1), rgba(203, 213, 225, 1))',
+                borderRadius: '20px',
+                padding: '1.75rem 2rem',
+                minWidth: '280px',
+                textAlign: 'center',
+                opacity: hoveredIcon === 'adaptive' ? 1 : 0,
+                visibility: hoveredIcon === 'adaptive' ? 'visible' : 'hidden',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                zIndex: 1000,
+                pointerEvents: 'none',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.6)'
+              }}
+              >
+                <h3 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '200',
+                  color: '#1e293b',
+                  marginBottom: '0.5rem',
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                  letterSpacing: '-0.03em'
+                }}>Adaptive Systems</h3>
+                <p style={{
+                  fontSize: '0.95rem',
+                  fontWeight: '200',
+                  color: '#475569',
+                  lineHeight: '1.5',
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                  letterSpacing: '0.01em'
+                }}>Designed to learn and scale.</p>
+              </div>
+            </div>
+
+            {/* Modular Design */}
+            <div style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Image
+                src="/arm.png"
+                alt="Modular Design"
+                width={240}
+                height={240}
+                style={{
+                  objectFit: 'contain',
+                  cursor: 'pointer',
+                  transition: 'transform 0.3s ease',
+                  transform: hoveredIcon === 'modular' ? 'scale(1.1)' : 'scale(1)'
+                }}
+                onMouseEnter={() => setHoveredIcon('modular')}
+                onMouseLeave={() => setHoveredIcon(null)}
+              />
+              {/* Tooltip */}
+              <div style={{
+                position: 'absolute',
+                top: '-140px',
+                left: '50%',
+                transform: hoveredIcon === 'modular' ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(10px)',
+                background: 'linear-gradient(135deg, rgba(226, 232, 240, 1), rgba(203, 213, 225, 1))',
+                borderRadius: '20px',
+                padding: '1.75rem 2rem',
+                minWidth: '280px',
+                textAlign: 'center',
+                opacity: hoveredIcon === 'modular' ? 1 : 0,
+                visibility: hoveredIcon === 'modular' ? 'visible' : 'hidden',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                zIndex: 1000,
+                pointerEvents: 'none',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.6)'
+              }}
+              >
+                <h3 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '200',
+                  color: '#1e293b',
+                  marginBottom: '0.5rem',
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                  letterSpacing: '-0.03em'
+                }}>Modular Design</h3>
+                <p style={{
+                  fontSize: '0.95rem',
+                  fontWeight: '200',
+                  color: '#475569',
+                  lineHeight: '1.5',
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                  letterSpacing: '0.01em'
+                }}>Use only what you need.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
