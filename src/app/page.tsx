@@ -8,6 +8,7 @@ export default function Home() {
   const [scrollPosition, setScrollPosition] = useState(0) // 0 = Hero, 1 = API, 2 = Pricing
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null)
   const [isScrolling, setIsScrolling] = useState(false)
+  const [expandedPlan, setExpandedPlan] = useState<string | null>(null)
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
@@ -133,34 +134,48 @@ export default function Home() {
         >
           <span 
             style={{
-              background: scrollPosition === 0 ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+              background: scrollPosition === 0 ? 'rgba(255, 255, 255, 0.25)' : 'transparent',
               paddingLeft: '1.5rem',
               paddingRight: '1.5rem',
               paddingTop: '0.625rem',
               paddingBottom: '0.625rem',
               borderRadius: '25px',
-              color: '#CBD5E1',
-              fontWeight: '200',
+              color: scrollPosition === 0 ? '#FFFFFF' : '#CBD5E1',
+              fontWeight: scrollPosition === 0 ? '400' : '200',
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              border: scrollPosition === 0 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
-              boxShadow: scrollPosition === 0 ? '0 2px 8px rgba(0, 0, 0, 0.1)' : 'none',
-              opacity: scrollPosition === 0 ? 1 : 0.7,
+              border: scrollPosition === 0 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
+              boxShadow: scrollPosition === 0 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none',
+              opacity: scrollPosition === 0 ? 1 : 0.5,
               transition: 'all 0.3s ease',
               cursor: 'pointer'
             }}
             onClick={() => setScrollPosition(0)}
+            onMouseEnter={(e) => {
+              if (scrollPosition !== 0) {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
+                e.currentTarget.style.opacity = '0.85';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (scrollPosition !== 0) {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.opacity = '0.5';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }
+            }}
           >
             Aether
           </span>
           <span 
             className="nav-item"
             style={{ 
-              color: '#CBD5E1', 
-              opacity: scrollPosition === 1 ? 1 : 0.7,
+              color: scrollPosition === 1 ? '#FFFFFF' : '#CBD5E1',
+              opacity: scrollPosition === 1 ? 1 : 0.5,
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontWeight: '200',
+              fontWeight: scrollPosition === 1 ? '400' : '200',
               paddingLeft: '1.5rem',
               paddingRight: '1.5rem',
               paddingTop: '0.625rem',
@@ -168,22 +183,22 @@ export default function Home() {
               borderRadius: '25px',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              background: scrollPosition === 1 ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
-              border: scrollPosition === 1 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
-              boxShadow: scrollPosition === 1 ? '0 2px 8px rgba(0, 0, 0, 0.1)' : 'none'
+              background: scrollPosition === 1 ? 'rgba(255, 255, 255, 0.25)' : 'transparent',
+              border: scrollPosition === 1 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
+              boxShadow: scrollPosition === 1 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none'
             }}
             onClick={() => setScrollPosition(1)}
             onMouseEnter={(e) => {
               if (scrollPosition !== 1) {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-                e.currentTarget.style.opacity = '0.9';
-                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
+                e.currentTarget.style.opacity = '0.85';
+                e.currentTarget.style.transform = 'translateY(-2px)';
               }
             }}
             onMouseLeave={(e) => {
               if (scrollPosition !== 1) {
                 e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.opacity = '0.7';
+                e.currentTarget.style.opacity = '0.5';
                 e.currentTarget.style.transform = 'translateY(0)';
               }
             }}
@@ -191,11 +206,11 @@ export default function Home() {
           <span 
             className="nav-item"
             style={{ 
-              color: '#CBD5E1', 
-              opacity: scrollPosition === 2 ? 1 : 0.7,
+              color: scrollPosition === 2 ? '#FFFFFF' : '#CBD5E1',
+              opacity: scrollPosition === 2 ? 1 : 0.5,
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontWeight: '200',
+              fontWeight: scrollPosition === 2 ? '400' : '200',
               paddingLeft: '1.5rem',
               paddingRight: '1.5rem',
               paddingTop: '0.625rem',
@@ -203,22 +218,22 @@ export default function Home() {
               borderRadius: '25px',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              background: scrollPosition === 2 ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
-              border: scrollPosition === 2 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
-              boxShadow: scrollPosition === 2 ? '0 2px 8px rgba(0, 0, 0, 0.1)' : 'none'
+              background: scrollPosition === 2 ? 'rgba(255, 255, 255, 0.25)' : 'transparent',
+              border: scrollPosition === 2 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
+              boxShadow: scrollPosition === 2 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none'
             }}
             onClick={() => setScrollPosition(2)}
             onMouseEnter={(e) => {
               if (scrollPosition !== 2) {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-                e.currentTarget.style.opacity = '0.9';
-                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
+                e.currentTarget.style.opacity = '0.85';
+                e.currentTarget.style.transform = 'translateY(-2px)';
               }
             }}
             onMouseLeave={(e) => {
               if (scrollPosition !== 2) {
                 e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.opacity = '0.7';
+                e.currentTarget.style.opacity = '0.5';
                 e.currentTarget.style.transform = 'translateY(0)';
               }
             }}
@@ -227,27 +242,30 @@ export default function Home() {
             className="nav-item"
             style={{ 
               color: '#CBD5E1', 
-              opacity: 0.7,
+              opacity: 0.5,
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
               fontWeight: '200',
-              paddingLeft: '1rem',
-              paddingRight: '1rem',
-              paddingTop: '0.5rem',
-              paddingBottom: '0.5rem',
-              borderRadius: '20px',
+              paddingLeft: '1.5rem',
+              paddingRight: '1.5rem',
+              paddingTop: '0.625rem',
+              paddingBottom: '0.625rem',
+              borderRadius: '25px',
               cursor: 'pointer',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              background: 'transparent',
+              border: 'none',
+              boxShadow: 'none'
             }}
             onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-              e.target.style.opacity = '0.9';
-              e.target.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
+              e.currentTarget.style.opacity = '0.85';
+              e.currentTarget.style.transform = 'translateY(-2px)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.background = 'transparent';
-              e.target.style.opacity = '0.7';
-              e.target.style.transform = 'translateY(0)';
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.opacity = '0.5';
+              e.currentTarget.style.transform = 'translateY(0)';
             }}
           >Team</span>
         </div>
@@ -536,7 +554,7 @@ export default function Home() {
 
       {/* Tercera sección - Pricing */}
       <div 
-        className="h-screen w-full flex items-center justify-center"
+        className="h-screen w-full flex items-center justify-center bg-cover bg-center bg-no-repeat"
         style={{
           position: 'fixed',
           bottom: 0,
@@ -544,9 +562,7 @@ export default function Home() {
           right: 0,
           transform: scrollPosition === 2 ? 'translateY(0)' : scrollPosition === 1 ? 'translateY(100vh)' : 'translateY(200vh)',
           transition: 'transform 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
-          background: 'rgba(255, 255, 255, 0.08)',
-          backdropFilter: 'blur(40px)',
-          WebkitBackdropFilter: 'blur(40px)',
+          backgroundImage: 'url(/background2.png)',
           borderTop: '1px solid rgba(255, 255, 255, 0.2)',
           boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.3)',
           zIndex: 60,
@@ -554,237 +570,446 @@ export default function Home() {
         }}
       >
         <div style={{
-          maxWidth: '1200px',
+          maxWidth: '1400px',
           width: '100%',
           padding: '0 40px'
         }}>
-          <h2 style={{
-            fontSize: '2.5rem',
-            fontWeight: '200',
-            color: '#CBD5E1',
-            textAlign: 'center',
-            marginBottom: '3rem',
-            letterSpacing: '-0.03em',
-            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
-          }}>
-            Choose the plan that fits your needs
-          </h2>
-
-          {/* Pricing Cards */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '2rem',
-            marginTop: '2rem'
-          }}>
-            {/* Plan Básico */}
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '20px',
-              padding: '2.5rem 2rem',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-8px)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-            }}
+          {/* Pricing Bubbles */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '1.5rem',
+                position: 'relative',
+                marginTop: '8rem'
+              }}>
+            {/* Starter Bubble */}
+            <div 
+                onClick={() => setExpandedPlan(expandedPlan === 'starter' ? null : 'starter')}
+                style={{
+                  width: expandedPlan === 'starter' ? '260px' : '180px',
+                  height: expandedPlan === 'starter' ? '340px' : '180px',
+                borderRadius: expandedPlan === 'starter' ? '30px' : '50%',
+                background: 'rgba(255, 255, 255, 0.12)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                position: 'relative',
+                overflow: 'hidden',
+                padding: '2rem'
+              }}
+              onMouseEnter={(e) => {
+                if (expandedPlan !== 'starter') {
+                  e.currentTarget.style.transform = 'translateY(-10px) scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (expandedPlan !== 'starter') {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+                }
+              }}
             >
               <h3 style={{
-                fontSize: '1.5rem',
+                fontSize: expandedPlan === 'starter' ? '1.5rem' : '1.3rem',
                 fontWeight: '200',
-                color: '#CBD5E1',
-                marginBottom: '1rem',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
+                color: '#FFFFFF',
+                marginBottom: '0.5rem',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                transition: 'all 0.5s ease',
+                textAlign: 'center',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
               }}>Starter</h3>
               <div style={{
-                fontSize: '3rem',
+                fontSize: expandedPlan === 'starter' ? '3rem' : '2.2rem',
+                fontWeight: '200',
+                color: '#FFFFFF',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                transition: 'all 0.5s ease',
+                marginBottom: expandedPlan === 'starter' ? '0.5rem' : '0',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+              }}>
+                <span style={{ fontSize: '1.3rem', verticalAlign: 'super' }}>$</span>49
+                <span style={{ fontSize: '0.9rem', fontWeight: '200', color: 'rgba(255, 255, 255, 0.9)', display: 'block', marginTop: '-0.5rem' }}>/month</span>
+              </div>
+              {expandedPlan === 'starter' && (
+                <div style={{
+                  marginTop: '0.8rem',
+                  animation: 'fadeIn 0.5s ease',
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center'
+                }}>
+                  <div style={{
+                    width: '80%',
+                    height: '1px',
+                    background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
+                    marginBottom: '0.7rem'
+                  }} />
+                  <p style={{
+                    fontSize: '0.8rem',
+                    color: '#FFFFFF',
+                    marginBottom: '0.8rem',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                    fontWeight: '400',
+                    textAlign: 'center',
+                    textShadow: '0 2px 6px rgba(0, 0, 0, 0.4)',
+                    letterSpacing: '0.03em'
+                  }}>Perfect for small projects</p>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.6rem',
+                    width: '100%',
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem'
+                  }}>
+                    {['1,000 API calls/month', 'Basic analytics', 'Email support', '1 user seat'].map((feature, index) => (
+                      <div key={index} style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '0.6rem',
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        padding: '0.4rem 0.7rem',
+                        borderRadius: '10px',
+                        backdropFilter: 'blur(10px)'
+                      }}>
+                        <div style={{
+                          width: '18px',
+                          height: '18px',
+                          borderRadius: '50%',
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        }}>
+                          <span style={{ 
+                            fontSize: '0.65rem', 
+                            color: '#FFFFFF',
+                            fontWeight: '700'
+                          }}>✓</span>
+                        </div>
+                        <span style={{
+                          fontSize: '0.75rem',
+                          color: '#FFFFFF',
+                          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                          fontWeight: '400',
+                          textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)',
+                          lineHeight: '1.2'
+                        }}>{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Professional Bubble - POPULAR */}
+            <div 
+              onClick={() => setExpandedPlan(expandedPlan === 'professional' ? null : 'professional')}
+              style={{
+                width: expandedPlan === 'professional' ? '270px' : '220px',
+                height: expandedPlan === 'professional' ? '390px' : '220px',
+                borderRadius: expandedPlan === 'professional' ? '30px' : '50%',
+                background: 'rgba(255, 255, 255, 0.18)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '3px solid rgba(255, 255, 255, 0.5)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 12px 48px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3)',
+                position: 'relative',
+                overflow: 'hidden',
+                padding: '2rem',
+                transform: expandedPlan === 'professional' ? 'scale(1)' : 'scale(1.1)'
+              }}
+              onMouseEnter={(e) => {
+                if (expandedPlan !== 'professional') {
+                  e.currentTarget.style.transform = 'translateY(-10px) scale(1.15)';
+                  e.currentTarget.style.boxShadow = '0 24px 80px rgba(0, 0, 0, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.4)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (expandedPlan !== 'professional') {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1.1)';
+                  e.currentTarget.style.boxShadow = '0 12px 48px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3)';
+                }
+              }}
+            >
+              {expandedPlan !== 'professional' && (
+                <div style={{
+                  position: 'absolute',
+                  top: '20px',
+                  background: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(10px)',
+                  padding: '0.4rem 1rem',
+                  borderRadius: '20px',
+                  fontSize: '0.7rem',
+                  fontWeight: '500',
+                  color: '#FFFFFF',
+                  border: '1px solid rgba(255, 255, 255, 0.4)',
+                  letterSpacing: '0.1em'
+                }}>
+                  POPULAR
+                </div>
+              )}
+              <h3 style={{
+                fontSize: expandedPlan === 'professional' ? '1.6rem' : '1.4rem',
                 fontWeight: '200',
                 color: '#FFFFFF',
                 marginBottom: '0.5rem',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
-              }}>
-                <span style={{ fontSize: '1.5rem', verticalAlign: 'super' }}>$</span>49
-                <span style={{ fontSize: '1.2rem', fontWeight: '200', color: '#CBD5E1' }}>/mo</span>
-              </div>
-              <p style={{
-                fontSize: '1rem',
-                color: 'rgba(203, 213, 225, 0.8)',
-                marginBottom: '2rem',
                 fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontWeight: '200'
-              }}>Perfect for small projects</p>
-              <ul style={{
-                listStyle: 'none',
-                padding: 0,
-                margin: 0,
-                fontSize: '0.95rem',
-                color: '#CBD5E1',
-                lineHeight: '2',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontWeight: '200'
-              }}>
-                <li>✓ 1,000 API calls/month</li>
-                <li>✓ Basic analytics</li>
-                <li>✓ Email support</li>
-                <li>✓ 1 user seat</li>
-              </ul>
-            </div>
-
-            {/* Plan Profesional */}
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.15)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '2px solid rgba(255, 255, 255, 0.4)',
-              borderRadius: '20px',
-              padding: '2.5rem 2rem',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer',
-              position: 'relative',
-              transform: 'scale(1.05)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05) translateY(-8px)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.6)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05) translateY(0)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-            }}
-            >
-              <div style={{
-                position: 'absolute',
-                top: '-12px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'rgba(255, 255, 255, 0.2)',
-                backdropFilter: 'blur(10px)',
-                padding: '0.4rem 1.2rem',
-                borderRadius: '20px',
-                fontSize: '0.75rem',
-                fontWeight: '400',
-                color: '#FFFFFF',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                letterSpacing: '0.05em'
-              }}>
-                POPULAR
-              </div>
-              <h3 style={{
-                fontSize: '1.5rem',
-                fontWeight: '200',
-                color: '#CBD5E1',
-                marginBottom: '1rem',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
+                transition: 'all 0.5s ease',
+                textAlign: 'center',
+                marginTop: expandedPlan === 'professional' ? '0' : '1.5rem',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
               }}>Professional</h3>
               <div style={{
-                fontSize: '3rem',
+                fontSize: expandedPlan === 'professional' ? '3.2rem' : '2.5rem',
                 fontWeight: '200',
                 color: '#FFFFFF',
-                marginBottom: '0.5rem',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                transition: 'all 0.5s ease',
+                marginBottom: expandedPlan === 'professional' ? '0.5rem' : '0',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
               }}>
                 <span style={{ fontSize: '1.5rem', verticalAlign: 'super' }}>$</span>149
-                <span style={{ fontSize: '1.2rem', fontWeight: '200', color: '#CBD5E1' }}>/mo</span>
+                <span style={{ fontSize: '1rem', fontWeight: '200', color: 'rgba(255, 255, 255, 0.9)', display: 'block', marginTop: '-0.5rem' }}>/month</span>
               </div>
-              <p style={{
-                fontSize: '1rem',
-                color: 'rgba(203, 213, 225, 0.8)',
-                marginBottom: '2rem',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontWeight: '200'
-              }}>For growing businesses</p>
-              <ul style={{
-                listStyle: 'none',
-                padding: 0,
-                margin: 0,
-                fontSize: '0.95rem',
-                color: '#CBD5E1',
-                lineHeight: '2',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontWeight: '200'
-              }}>
-                <li>✓ 10,000 API calls/month</li>
-                <li>✓ Advanced analytics</li>
-                <li>✓ Priority support</li>
-                <li>✓ 5 user seats</li>
-                <li>✓ Custom integrations</li>
-              </ul>
+              {expandedPlan === 'professional' && (
+                <div style={{
+                  marginTop: '0.8rem',
+                  animation: 'fadeIn 0.5s ease',
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center'
+                }}>
+                  <div style={{
+                    width: '80%',
+                    height: '1px',
+                    background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent)',
+                    marginBottom: '0.7rem'
+                  }} />
+                  <div style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    padding: '0.35rem 0.9rem',
+                    borderRadius: '20px',
+                    fontSize: '0.6rem',
+                    fontWeight: '700',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(255, 255, 255, 0.4)',
+                    letterSpacing: '0.15em',
+                    textAlign: 'center',
+                    marginBottom: '0.7rem',
+                    textShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                  }}>
+                    POPULAR
+                  </div>
+                  <p style={{
+                    fontSize: '0.8rem',
+                    color: '#FFFFFF',
+                    marginBottom: '0.8rem',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                    fontWeight: '400',
+                    textAlign: 'center',
+                    textShadow: '0 2px 6px rgba(0, 0, 0, 0.4)',
+                    letterSpacing: '0.03em'
+                  }}>For growing businesses</p>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.6rem',
+                    width: '100%',
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem'
+                  }}>
+                    {['10,000 API calls/month', 'Advanced analytics', 'Priority support', '5 user seats', 'Custom integrations'].map((feature, index) => (
+                      <div key={index} style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '0.6rem',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        padding: '0.4rem 0.7rem',
+                        borderRadius: '10px',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)'
+                      }}>
+                        <div style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          background: 'rgba(255, 255, 255, 0.25)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)'
+                        }}>
+                          <span style={{ 
+                            fontSize: '0.7rem', 
+                            color: '#FFFFFF',
+                            fontWeight: '700'
+                          }}>✓</span>
+                        </div>
+                        <span style={{
+                          fontSize: '0.75rem',
+                          color: '#FFFFFF',
+                          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                          fontWeight: '400',
+                          textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)',
+                          lineHeight: '1.2'
+                        }}>{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Plan Enterprise */}
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '20px',
-              padding: '2.5rem 2rem',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-8px)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-            }}
+            {/* Enterprise Bubble */}
+            <div 
+              onClick={() => setExpandedPlan(expandedPlan === 'enterprise' ? null : 'enterprise')}
+              style={{
+                width: expandedPlan === 'enterprise' ? '260px' : '180px',
+                height: expandedPlan === 'enterprise' ? '380px' : '180px',
+                borderRadius: expandedPlan === 'enterprise' ? '30px' : '50%',
+                background: 'rgba(255, 255, 255, 0.12)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                position: 'relative',
+                overflow: 'hidden',
+                padding: '2rem'
+              }}
+              onMouseEnter={(e) => {
+                if (expandedPlan !== 'enterprise') {
+                  e.currentTarget.style.transform = 'translateY(-10px) scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (expandedPlan !== 'enterprise') {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+                }
+              }}
             >
               <h3 style={{
-                fontSize: '1.5rem',
-                fontWeight: '200',
-                color: '#CBD5E1',
-                marginBottom: '1rem',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
-              }}>Enterprise</h3>
-              <div style={{
-                fontSize: '3rem',
+                fontSize: expandedPlan === 'enterprise' ? '1.5rem' : '1.3rem',
                 fontWeight: '200',
                 color: '#FFFFFF',
                 marginBottom: '0.5rem',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                transition: 'all 0.5s ease',
+                textAlign: 'center',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+              }}>Enterprise</h3>
+              <div style={{
+                fontSize: expandedPlan === 'enterprise' ? '2.5rem' : '2rem',
+                fontWeight: '200',
+                color: '#FFFFFF',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                transition: 'all 0.5s ease',
+                marginBottom: expandedPlan === 'enterprise' ? '0.5rem' : '0',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
               }}>
                 Custom
               </div>
-              <p style={{
-                fontSize: '1rem',
-                color: 'rgba(203, 213, 225, 0.8)',
-                marginBottom: '2rem',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontWeight: '200'
-              }}>Tailored for large teams</p>
-              <ul style={{
-                listStyle: 'none',
-                padding: 0,
-                margin: 0,
-                fontSize: '0.95rem',
-                color: '#CBD5E1',
-                lineHeight: '2',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontWeight: '200'
-              }}>
-                <li>✓ Unlimited API calls</li>
-                <li>✓ Enterprise analytics</li>
-                <li>✓ 24/7 dedicated support</li>
-                <li>✓ Unlimited seats</li>
-                <li>✓ Custom features</li>
-                <li>✓ SLA guarantee</li>
-              </ul>
+              {expandedPlan === 'enterprise' && (
+                <div style={{
+                  marginTop: '0.6rem',
+                  animation: 'fadeIn 0.5s ease',
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center'
+                }}>
+                  <div style={{
+                    width: '80%',
+                    height: '1px',
+                    background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
+                    marginBottom: '0.5rem'
+                  }} />
+                  <p style={{
+                    fontSize: '0.75rem',
+                    color: '#FFFFFF',
+                    marginBottom: '0.6rem',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                    fontWeight: '400',
+                    textAlign: 'center',
+                    textShadow: '0 2px 6px rgba(0, 0, 0, 0.4)',
+                    letterSpacing: '0.03em'
+                  }}>Tailored for large teams</p>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem',
+                    width: '100%',
+                    paddingLeft: '0.9rem',
+                    paddingRight: '0.9rem'
+                  }}>
+                    {['Unlimited API calls', 'Enterprise analytics', '24/7 dedicated support', 'Unlimited seats', 'Custom features', 'SLA guarantee'].map((feature, index) => (
+                      <div key={index} style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '0.5rem',
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        padding: '0.35rem 0.6rem',
+                        borderRadius: '10px',
+                        backdropFilter: 'blur(10px)'
+                      }}>
+                        <div style={{
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '50%',
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        }}>
+                          <span style={{ 
+                            fontSize: '0.6rem', 
+                            color: '#FFFFFF',
+                            fontWeight: '700'
+                          }}>✓</span>
+                        </div>
+                        <span style={{
+                          fontSize: '0.7rem',
+                          color: '#FFFFFF',
+                          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                          fontWeight: '400',
+                          textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)',
+                          lineHeight: '1.15'
+                        }}>{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
