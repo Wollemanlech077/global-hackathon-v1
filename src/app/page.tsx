@@ -5,36 +5,81 @@ import { useState, useEffect } from 'react'
 
 export default function Home() {
   const router = useRouter()
-  const [scrollPosition, setScrollPosition] = useState(0) // 0 = Hero, 1 = API, 2 = Pricing
+  const [scrollPosition, setScrollPosition] = useState(0) // 0 = Hero, 1 = API, 2 = Pricing, 3 = Team
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null)
   const [isScrolling, setIsScrolling] = useState(false)
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null)
 
   useEffect(() => {
+    let touchStartY = 0
+    const COOLDOWN_TIME = 700 // Tiempo de cooldown
+
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
       
-      if (isScrolling) return // Prevenir scrolls múltiples
+      if (isScrolling) return
 
-      if (e.deltaY > 50) {
-        // Scroll down
-        if (scrollPosition < 2) {
-          setIsScrolling(true)
-          setScrollPosition(prev => prev + 1)
-          setTimeout(() => setIsScrolling(false), 1500) // Esperar a que termine la transición
+      // Detección directa sin acumulación
+      const delta = e.deltaY
+
+      if (Math.abs(delta) > 10) { // Umbral muy bajo para respuesta inmediata
+        if (delta > 0) {
+          // Scroll down
+          if (scrollPosition < 3) {
+            setIsScrolling(true)
+            setScrollPosition(prev => prev + 1)
+            setTimeout(() => setIsScrolling(false), COOLDOWN_TIME)
+          }
+        } else {
+          // Scroll up
+          if (scrollPosition > 0) {
+            setIsScrolling(true)
+            setScrollPosition(prev => prev - 1)
+            setTimeout(() => setIsScrolling(false), COOLDOWN_TIME)
+          }
         }
-      } else if (e.deltaY < -50) {
-        // Scroll up
-        if (scrollPosition > 0) {
-          setIsScrolling(true)
-          setScrollPosition(prev => prev - 1)
-          setTimeout(() => setIsScrolling(false), 1500) // Esperar a que termine la transición
+      }
+    }
+
+    // Soporte para gestos táctiles
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY
+    }
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (isScrolling) return
+      
+      const touchEndY = e.changedTouches[0].clientY
+      const diff = touchStartY - touchEndY
+
+      if (Math.abs(diff) >= 50) { // Umbral táctil
+        if (diff > 0) {
+          // Swipe up - scroll down
+          if (scrollPosition < 3) {
+            setIsScrolling(true)
+            setScrollPosition(prev => prev + 1)
+            setTimeout(() => setIsScrolling(false), COOLDOWN_TIME)
+          }
+        } else {
+          // Swipe down - scroll up
+          if (scrollPosition > 0) {
+            setIsScrolling(true)
+            setScrollPosition(prev => prev - 1)
+            setTimeout(() => setIsScrolling(false), COOLDOWN_TIME)
+          }
         }
       }
     }
 
     window.addEventListener('wheel', handleWheel, { passive: false })
-    return () => window.removeEventListener('wheel', handleWheel)
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchend', handleTouchEnd, { passive: true })
+    
+    return () => {
+      window.removeEventListener('wheel', handleWheel)
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchend', handleTouchEnd)
+    }
   }, [scrollPosition, isScrolling])
 
   return (
@@ -111,7 +156,7 @@ export default function Home() {
           opacity: 1,
           transform: 'translateY(0)'
         }}>
-          {scrollPosition === 0 ? 'Beyond the Surface' : scrollPosition === 1 ? 'Data Becomes Sense' : 'Simple, Transparent Pricing'}
+          {scrollPosition === 0 ? 'Beyond the Surface' : scrollPosition === 1 ? 'Data Becomes Sense' : scrollPosition === 2 ? 'Simple, Transparent Pricing' : 'Meet Our Team'}
         </h1>
         <div 
           className="subtitle-tags rounded-full backdrop-blur-md border border-white/20 flex items-center" 
@@ -241,11 +286,11 @@ export default function Home() {
           <span 
             className="nav-item"
             style={{ 
-              color: '#CBD5E1', 
-              opacity: 0.5,
+              color: scrollPosition === 3 ? '#FFFFFF' : '#CBD5E1',
+              opacity: scrollPosition === 3 ? 1 : 0.5,
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontWeight: '200',
+              fontWeight: scrollPosition === 3 ? '400' : '200',
               paddingLeft: '1.5rem',
               paddingRight: '1.5rem',
               paddingTop: '0.625rem',
@@ -253,19 +298,24 @@ export default function Home() {
               borderRadius: '25px',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              background: 'transparent',
-              border: 'none',
-              boxShadow: 'none'
+              background: scrollPosition === 3 ? 'rgba(255, 255, 255, 0.25)' : 'transparent',
+              border: scrollPosition === 3 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
+              boxShadow: scrollPosition === 3 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none'
             }}
+            onClick={() => setScrollPosition(3)}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
-              e.currentTarget.style.opacity = '0.85';
-              e.currentTarget.style.transform = 'translateY(-2px)';
+              if (scrollPosition !== 3) {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
+                e.currentTarget.style.opacity = '0.85';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.opacity = '0.5';
-              e.currentTarget.style.transform = 'translateY(0)';
+              if (scrollPosition !== 3) {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.opacity = '0.5';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }
             }}
           >Team</span>
         </div>
@@ -330,7 +380,7 @@ export default function Home() {
           left: 0,
           right: 0,
           transform: scrollPosition === 1 ? 'translateY(0)' : scrollPosition === 0 ? 'translateY(100vh)' : 'translateY(-100vh)',
-          transition: 'transform 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
           background: 'rgba(255, 255, 255, 0.08)',
           backdropFilter: 'blur(40px)',
           WebkitBackdropFilter: 'blur(40px)',
@@ -560,8 +610,8 @@ export default function Home() {
           bottom: 0,
           left: 0,
           right: 0,
-          transform: scrollPosition === 2 ? 'translateY(0)' : scrollPosition === 1 ? 'translateY(100vh)' : 'translateY(200vh)',
-          transition: 'transform 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
+          transform: scrollPosition === 2 ? 'translateY(0)' : scrollPosition === 3 ? 'translateY(-100vh)' : scrollPosition === 1 ? 'translateY(100vh)' : 'translateY(200vh)',
+          transition: 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
           backgroundImage: 'url(/background2.png)',
           borderTop: '1px solid rgba(255, 255, 255, 0.2)',
           boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.3)',
@@ -1011,6 +1061,193 @@ export default function Home() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Cuarta sección - Team */}
+      <div 
+        className="h-screen w-full flex items-center justify-center bg-cover bg-center bg-no-repeat"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          transform: scrollPosition === 3 ? 'translateY(0)' : scrollPosition === 2 ? 'translateY(100vh)' : scrollPosition === 1 ? 'translateY(200vh)' : 'translateY(300vh)',
+          transition: 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+          backgroundImage: 'url(/background.png)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.3)',
+          zIndex: 70,
+          pointerEvents: scrollPosition === 3 ? 'auto' : 'none'
+        }}
+      >
+        <div style={{
+          maxWidth: '1400px',
+          width: '100%',
+          padding: '0 40px'
+        }}>
+          {/* Team Members */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '2rem',
+            marginTop: '4rem'
+          }}>
+            {/* Team Member 1 - Carlos */}
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.12)',
+              backdropFilter: 'blur(30px)',
+              WebkitBackdropFilter: 'blur(30px)',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '24px',
+              padding: '2rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-10px)';
+              e.currentTarget.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3)';
+              e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+              e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.3)';
+            }}
+            >
+              {/* Avatar Circle */}
+              <div style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
+                border: '3px solid rgba(255, 255, 255, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1.5rem',
+                fontSize: '3rem',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.3)'
+              }}>
+                👨‍💻
+              </div>
+              <h3 style={{
+                fontSize: '1.5rem',
+                fontWeight: '300',
+                color: '#FFFFFF',
+                marginBottom: '0.5rem',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+              }}>Carlos Zendejas</h3>
+              <p style={{
+                fontSize: '0.95rem',
+                color: 'rgba(255, 255, 255, 0.8)',
+                marginBottom: '1rem',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                fontWeight: '300',
+                textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)'
+              }}>Lead Developer</p>
+              <div style={{
+                width: '100%',
+                height: '1px',
+                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
+                marginBottom: '1rem'
+              }} />
+              <p style={{
+                fontSize: '0.85rem',
+                color: 'rgba(255, 255, 255, 0.9)',
+                textAlign: 'center',
+                lineHeight: '1.6',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                fontWeight: '300',
+                textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)'
+              }}>
+                Full-stack developer passionate about creating innovative solutions
+              </p>
+            </div>
+
+            {/* Team Member 2 - Arturo */}
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.12)',
+              backdropFilter: 'blur(30px)',
+              WebkitBackdropFilter: 'blur(30px)',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '24px',
+              padding: '2rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-10px)';
+              e.currentTarget.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3)';
+              e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+              e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.3)';
+            }}
+            >
+              {/* Avatar Circle */}
+              <div style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
+                border: '3px solid rgba(255, 255, 255, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1.5rem',
+                fontSize: '3rem',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.3)'
+              }}>
+                🎨
+              </div>
+              <h3 style={{
+                fontSize: '1.5rem',
+                fontWeight: '300',
+                color: '#FFFFFF',
+                marginBottom: '0.5rem',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+              }}>Arturo Ordaz</h3>
+              <p style={{
+                fontSize: '0.95rem',
+                color: 'rgba(255, 255, 255, 0.8)',
+                marginBottom: '1rem',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                fontWeight: '300',
+                textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)'
+              }}>UI/UX Designer</p>
+              <div style={{
+                width: '100%',
+                height: '1px',
+                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
+                marginBottom: '1rem'
+              }} />
+              <p style={{
+                fontSize: '0.85rem',
+                color: 'rgba(255, 255, 255, 0.9)',
+                textAlign: 'center',
+                lineHeight: '1.6',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                fontWeight: '300',
+                textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)'
+              }}>
+                Creative designer focused on exceptional user experiences
+              </p>
+            </div>
+
           </div>
         </div>
       </div>
