@@ -10,31 +10,61 @@ export default function Home() {
   const [isScrolling, setIsScrolling] = useState(false)
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null)
 
+  // Validación de seguridad: asegurar que scrollPosition siempre esté en rango válido
+  useEffect(() => {
+    if (scrollPosition < 0) {
+      console.warn('⚠️ ScrollPosition fuera de rango (menor que 0):', scrollPosition)
+      setScrollPosition(0)
+    } else if (scrollPosition > 3) {
+      console.warn('⚠️ ScrollPosition fuera de rango (mayor que 3):', scrollPosition)
+      setScrollPosition(3)
+    } else {
+      console.log('✅ ScrollPosition válido:', scrollPosition)
+    }
+  }, [scrollPosition])
+
   useEffect(() => {
     let touchStartY = 0
-    const COOLDOWN_TIME = 700 // Tiempo de cooldown
+    let lastScrollTime = 0
+    const COOLDOWN_TIME = 800 // Tiempo de cooldown aumentado
+    const MIN_SCROLL_INTERVAL = 800 // Tiempo mínimo entre scrolls
+    const SCROLL_THRESHOLD = 50 // Umbral balanceado
+    const MAX_POSITION = 3 // Máxima posición permitida
+    const MIN_POSITION = 0 // Mínima posición permitida
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
       
+      // Verificaciones de seguridad
       if (isScrolling) return
-
-      // Detección directa sin acumulación
+      
+      const now = Date.now()
+      if (now - lastScrollTime < MIN_SCROLL_INTERVAL) return
+      
       const delta = e.deltaY
 
-      if (Math.abs(delta) > 10) { // Umbral muy bajo para respuesta inmediata
+      // Umbral más alto para evitar activaciones accidentales
+      if (Math.abs(delta) >= SCROLL_THRESHOLD) {
         if (delta > 0) {
-          // Scroll down
-          if (scrollPosition < 3) {
+          // Scroll down - validación estricta
+          if (scrollPosition >= 0 && scrollPosition < MAX_POSITION) {
+            lastScrollTime = now
             setIsScrolling(true)
-            setScrollPosition(prev => prev + 1)
+            setScrollPosition(prev => {
+              const next = prev + 1
+              return next <= MAX_POSITION ? next : prev
+            })
             setTimeout(() => setIsScrolling(false), COOLDOWN_TIME)
           }
         } else {
-          // Scroll up
-          if (scrollPosition > 0) {
+          // Scroll up - validación estricta
+          if (scrollPosition > MIN_POSITION && scrollPosition <= MAX_POSITION) {
+            lastScrollTime = now
             setIsScrolling(true)
-            setScrollPosition(prev => prev - 1)
+            setScrollPosition(prev => {
+              const next = prev - 1
+              return next >= MIN_POSITION ? next : prev
+            })
             setTimeout(() => setIsScrolling(false), COOLDOWN_TIME)
           }
         }
@@ -49,22 +79,33 @@ export default function Home() {
     const handleTouchEnd = (e: TouchEvent) => {
       if (isScrolling) return
       
+      const now = Date.now()
+      if (now - lastScrollTime < MIN_SCROLL_INTERVAL) return
+      
       const touchEndY = e.changedTouches[0].clientY
       const diff = touchStartY - touchEndY
 
-      if (Math.abs(diff) >= 50) { // Umbral táctil
+      if (Math.abs(diff) >= 60) { // Umbral táctil
         if (diff > 0) {
           // Swipe up - scroll down
-          if (scrollPosition < 3) {
+          if (scrollPosition >= 0 && scrollPosition < MAX_POSITION) {
+            lastScrollTime = now
             setIsScrolling(true)
-            setScrollPosition(prev => prev + 1)
+            setScrollPosition(prev => {
+              const next = prev + 1
+              return next <= MAX_POSITION ? next : prev
+            })
             setTimeout(() => setIsScrolling(false), COOLDOWN_TIME)
           }
         } else {
           // Swipe down - scroll up
-          if (scrollPosition > 0) {
+          if (scrollPosition > MIN_POSITION && scrollPosition <= MAX_POSITION) {
+            lastScrollTime = now
             setIsScrolling(true)
-            setScrollPosition(prev => prev - 1)
+            setScrollPosition(prev => {
+              const next = prev - 1
+              return next >= MIN_POSITION ? next : prev
+            })
             setTimeout(() => setIsScrolling(false), COOLDOWN_TIME)
           }
         }
@@ -147,14 +188,19 @@ export default function Home() {
         }}
       >
         <h1 className="main-title mb-8" style={{ 
-          color: '#CBD5E1',
+          color: scrollPosition === 3 ? 'transparent' : '#CBD5E1',
+          background: scrollPosition === 3 ? 'linear-gradient(135deg, #A8DAFF, #F5B6FF, #FFC8A1)' : 'none',
+          WebkitBackgroundClip: scrollPosition === 3 ? 'text' : 'none',
+          WebkitTextFillColor: scrollPosition === 3 ? 'transparent' : 'inherit',
+          backgroundClip: scrollPosition === 3 ? 'text' : 'none',
           fontSize: '4.5rem',
           fontWeight: '200',
           letterSpacing: '-0.03em',
           lineHeight: '1.1',
           transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
           opacity: 1,
-          transform: 'translateY(0)'
+          transform: 'translateY(0)',
+          textShadow: scrollPosition === 3 ? '0 4px 20px rgba(168, 218, 255, 0.3)' : 'none'
         }}>
           {scrollPosition === 0 ? 'Beyond the Surface' : scrollPosition === 1 ? 'Data Becomes Sense' : scrollPosition === 2 ? 'Simple, Transparent Pricing' : 'Meet Our Team'}
         </h1>
@@ -166,15 +212,16 @@ export default function Home() {
             paddingRight: '2rem',
             paddingTop: '0.875rem',
             paddingBottom: '0.875rem',
-            background: 'rgba(255, 255, 255, 0.12)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1)',
+            background: scrollPosition === 3 ? 'linear-gradient(135deg, rgba(168, 218, 255, 0.5), rgba(245, 182, 255, 0.5), rgba(255, 200, 161, 0.5))' : 'rgba(255, 255, 255, 0.12)',
+            backdropFilter: scrollPosition === 3 ? 'blur(40px) saturate(180%)' : 'blur(24px)',
+            WebkitBackdropFilter: scrollPosition === 3 ? 'blur(40px) saturate(180%)' : 'blur(24px)',
+            boxShadow: scrollPosition === 3 ? '0 8px 40px rgba(168, 218, 255, 0.4), 0 4px 20px rgba(245, 182, 255, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.4), inset 0 -2px 10px rgba(255, 255, 255, 0.2)' : '0 8px 32px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1)',
+            border: scrollPosition === 3 ? '2px solid rgba(255, 255, 255, 0.5)' : '1px solid rgba(255, 255, 255, 0.2)',
             gap: '2.5rem',
             fontSize: '1rem',
             fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
             fontWeight: '200',
-            borderWidth: '1px'
+            transition: 'all 0.5s ease'
           }}
         >
           <span 
@@ -185,15 +232,16 @@ export default function Home() {
               paddingTop: '0.625rem',
               paddingBottom: '0.625rem',
               borderRadius: '25px',
-              color: scrollPosition === 0 ? '#FFFFFF' : '#CBD5E1',
-              fontWeight: scrollPosition === 0 ? '400' : '200',
+              color: scrollPosition === 0 ? '#FFFFFF' : (scrollPosition === 3 ? '#1E293B' : '#CBD5E1'),
+              fontWeight: scrollPosition === 0 ? '400' : (scrollPosition === 3 ? '400' : '200'),
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
               border: scrollPosition === 0 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
               boxShadow: scrollPosition === 0 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none',
-              opacity: scrollPosition === 0 ? 1 : 0.5,
+              opacity: scrollPosition === 0 ? 1 : (scrollPosition === 3 ? 0.8 : 0.5),
               transition: 'all 0.3s ease',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              textShadow: scrollPosition === 3 ? '0 1px 2px rgba(255, 255, 255, 0.8)' : 'none'
             }}
             onClick={() => setScrollPosition(0)}
             onMouseEnter={(e) => {
@@ -216,11 +264,11 @@ export default function Home() {
           <span 
             className="nav-item"
             style={{ 
-              color: scrollPosition === 1 ? '#FFFFFF' : '#CBD5E1',
-              opacity: scrollPosition === 1 ? 1 : 0.5,
+              color: scrollPosition === 1 ? '#FFFFFF' : (scrollPosition === 3 ? '#1E293B' : '#CBD5E1'),
+              opacity: scrollPosition === 1 ? 1 : (scrollPosition === 3 ? 0.8 : 0.5),
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontWeight: scrollPosition === 1 ? '400' : '200',
+              fontWeight: scrollPosition === 1 ? '400' : (scrollPosition === 3 ? '400' : '200'),
               paddingLeft: '1.5rem',
               paddingRight: '1.5rem',
               paddingTop: '0.625rem',
@@ -230,7 +278,8 @@ export default function Home() {
               transition: 'all 0.3s ease',
               background: scrollPosition === 1 ? 'rgba(255, 255, 255, 0.25)' : 'transparent',
               border: scrollPosition === 1 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
-              boxShadow: scrollPosition === 1 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none'
+              boxShadow: scrollPosition === 1 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none',
+              textShadow: scrollPosition === 3 ? '0 1px 2px rgba(255, 255, 255, 0.8)' : 'none'
             }}
             onClick={() => setScrollPosition(1)}
             onMouseEnter={(e) => {
@@ -251,11 +300,11 @@ export default function Home() {
           <span 
             className="nav-item"
             style={{ 
-              color: scrollPosition === 2 ? '#FFFFFF' : '#CBD5E1',
-              opacity: scrollPosition === 2 ? 1 : 0.5,
+              color: scrollPosition === 2 ? '#FFFFFF' : (scrollPosition === 3 ? '#1E293B' : '#CBD5E1'),
+              opacity: scrollPosition === 2 ? 1 : (scrollPosition === 3 ? 0.8 : 0.5),
               fontSize: '1rem',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontWeight: scrollPosition === 2 ? '400' : '200',
+              fontWeight: scrollPosition === 2 ? '400' : (scrollPosition === 3 ? '400' : '200'),
               paddingLeft: '1.5rem',
               paddingRight: '1.5rem',
               paddingTop: '0.625rem',
@@ -265,7 +314,8 @@ export default function Home() {
               transition: 'all 0.3s ease',
               background: scrollPosition === 2 ? 'rgba(255, 255, 255, 0.25)' : 'transparent',
               border: scrollPosition === 2 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
-              boxShadow: scrollPosition === 2 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none'
+              boxShadow: scrollPosition === 2 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none',
+              textShadow: scrollPosition === 3 ? '0 1px 2px rgba(255, 255, 255, 0.8)' : 'none'
             }}
             onClick={() => setScrollPosition(2)}
             onMouseEnter={(e) => {
@@ -298,9 +348,9 @@ export default function Home() {
               borderRadius: '25px',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              background: scrollPosition === 3 ? 'rgba(255, 255, 255, 0.25)' : 'transparent',
-              border: scrollPosition === 3 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
-              boxShadow: scrollPosition === 3 ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none'
+              background: scrollPosition === 3 ? 'rgba(255, 255, 255, 0.3)' : 'transparent',
+              border: scrollPosition === 3 ? '1px solid rgba(255, 255, 255, 0.5)' : 'none',
+              boxShadow: scrollPosition === 3 ? '0 4px 12px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4)' : 'none'
             }}
             onClick={() => setScrollPosition(3)}
             onMouseEnter={(e) => {
@@ -365,6 +415,13 @@ export default function Home() {
       >
         <button className="portal-button" onClick={() => {
           router.push('/map');
+        }} style={{
+          background: scrollPosition === 3 ? 'linear-gradient(135deg, rgba(168, 218, 255, 0.5), rgba(245, 182, 255, 0.5), rgba(255, 200, 161, 0.5))' : 'rgba(255, 255, 255, 0.15)',
+          backdropFilter: scrollPosition === 3 ? 'blur(40px) saturate(180%)' : 'blur(20px)',
+          WebkitBackdropFilter: scrollPosition === 3 ? 'blur(40px) saturate(180%)' : 'blur(20px)',
+          boxShadow: scrollPosition === 3 ? '0 8px 40px rgba(168, 218, 255, 0.4), 0 4px 20px rgba(245, 182, 255, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.4), inset 0 -2px 10px rgba(255, 255, 255, 0.2)' : '0 4px 16px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.2)',
+          border: scrollPosition === 3 ? '2px solid rgba(255, 255, 255, 0.5)' : '1px solid rgba(255, 255, 255, 0.3)',
+          transition: 'all 0.5s ease'
         }}>
           <span className="button-text">Explore the portal</span>
           <span className="arrow-circle">→</span>
@@ -380,7 +437,7 @@ export default function Home() {
           left: 0,
           right: 0,
           transform: scrollPosition === 1 ? 'translateY(0)' : scrollPosition === 0 ? 'translateY(100vh)' : 'translateY(-100vh)',
-          transition: 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
           background: 'rgba(255, 255, 255, 0.08)',
           backdropFilter: 'blur(40px)',
           WebkitBackdropFilter: 'blur(40px)',
@@ -611,7 +668,7 @@ export default function Home() {
           left: 0,
           right: 0,
           transform: scrollPosition === 2 ? 'translateY(0)' : scrollPosition === 3 ? 'translateY(-100vh)' : scrollPosition === 1 ? 'translateY(100vh)' : 'translateY(200vh)',
-          transition: 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
           backgroundImage: 'url(/background2.png)',
           borderTop: '1px solid rgba(255, 255, 255, 0.2)',
           boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.3)',
@@ -1074,178 +1131,128 @@ export default function Home() {
           left: 0,
           right: 0,
           transform: scrollPosition === 3 ? 'translateY(0)' : scrollPosition === 2 ? 'translateY(100vh)' : scrollPosition === 1 ? 'translateY(200vh)' : 'translateY(300vh)',
-          transition: 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
-          backgroundImage: 'url(/background.png)',
-          borderTop: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.3)',
+          transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+          background: '#FFFFFF',
+          borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.1)',
           zIndex: 70,
-          pointerEvents: scrollPosition === 3 ? 'auto' : 'none'
+          pointerEvents: scrollPosition === 3 ? 'auto' : 'none',
+          overflow: 'visible'
         }}
       >
         <div style={{
           maxWidth: '1400px',
           width: '100%',
-          padding: '0 40px'
+          padding: '0 40px',
+          overflow: 'visible',
+          height: '100%'
         }}>
           {/* Team Members */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '2rem',
-            marginTop: '4rem'
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            marginTop: '2rem',
+            paddingLeft: '4rem',
+            paddingRight: '4rem',
+            paddingBottom: '4rem',
+            minHeight: 'calc(100vh - 4rem)'
           }}>
             {/* Team Member 1 - Carlos */}
             <div style={{
-              background: 'rgba(255, 255, 255, 0.12)',
-              backdropFilter: 'blur(30px)',
-              WebkitBackdropFilter: 'blur(30px)',
-              border: '2px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '24px',
-              padding: '2rem',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-10px)';
-              e.currentTarget.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3)';
-              e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
-              e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.3)';
-            }}
-            >
-              {/* Avatar Circle */}
-              <div style={{
-                width: '120px',
-                height: '120px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
-                border: '3px solid rgba(255, 255, 255, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '1.5rem',
-                fontSize: '3rem',
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.3)'
-              }}>
-                👨‍💻
-              </div>
-              <h3 style={{
-                fontSize: '1.5rem',
-                fontWeight: '300',
-                color: '#FFFFFF',
-                marginBottom: '0.5rem',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
-              }}>Carlos Zendejas</h3>
-              <p style={{
-                fontSize: '0.95rem',
-                color: 'rgba(255, 255, 255, 0.8)',
-                marginBottom: '1rem',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontWeight: '300',
-                textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)'
-              }}>Lead Developer</p>
-              <div style={{
-                width: '100%',
-                height: '1px',
-                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-                marginBottom: '1rem'
-              }} />
-              <p style={{
-                fontSize: '0.85rem',
-                color: 'rgba(255, 255, 255, 0.9)',
-                textAlign: 'center',
-                lineHeight: '1.6',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontWeight: '300',
-                textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)'
-              }}>
-                Full-stack developer passionate about creating innovative solutions
-              </p>
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              marginTop: '20rem'
+            }}>
+                  {/* Avatar Circle */}
+                  <div style={{
+                    width: '120px',
+                    height: '120px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, rgba(100, 116, 139, 0.15), rgba(71, 85, 105, 0.1))',
+                    border: '3px solid rgba(71, 85, 105, 0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '1.5rem',
+                    fontSize: '3rem',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5)'
+                  }}>
+                    👨‍💻
+                  </div>
+                  <h3 style={{
+                    fontSize: '1.5rem',
+                    fontWeight: '300',
+                    color: '#1E293B',
+                    marginBottom: '0.5rem',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                    textShadow: 'none'
+                  }}>Carlos Zendejas</h3>
+            </div>
+
+            {/* Video en el medio */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'center',
+              maxWidth: '450px',
+              width: '100%',
+              marginTop: '20rem'
+            }}>
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={{
+                  width: '100%',
+                  maxWidth: '320px',
+                  height: 'auto',
+                  borderRadius: '12px',
+                  boxShadow: 'none',
+                  border: 'none',
+                  objectFit: 'contain'
+                }}
+              >
+                <source src="/video.mov" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
             </div>
 
             {/* Team Member 2 - Arturo */}
             <div style={{
-              background: 'rgba(255, 255, 255, 0.12)',
-              backdropFilter: 'blur(30px)',
-              WebkitBackdropFilter: 'blur(30px)',
-              border: '2px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '24px',
-              padding: '2rem',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-10px)';
-              e.currentTarget.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3)';
-              e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
-              e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.3)';
-            }}
-            >
-              {/* Avatar Circle */}
-              <div style={{
-                width: '120px',
-                height: '120px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
-                border: '3px solid rgba(255, 255, 255, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '1.5rem',
-                fontSize: '3rem',
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.3)'
-              }}>
-                🎨
-              </div>
-              <h3 style={{
-                fontSize: '1.5rem',
-                fontWeight: '300',
-                color: '#FFFFFF',
-                marginBottom: '0.5rem',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
-              }}>Arturo Ordaz</h3>
-              <p style={{
-                fontSize: '0.95rem',
-                color: 'rgba(255, 255, 255, 0.8)',
-                marginBottom: '1rem',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontWeight: '300',
-                textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)'
-              }}>UI/UX Designer</p>
-              <div style={{
-                width: '100%',
-                height: '1px',
-                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-                marginBottom: '1rem'
-              }} />
-              <p style={{
-                fontSize: '0.85rem',
-                color: 'rgba(255, 255, 255, 0.9)',
-                textAlign: 'center',
-                lineHeight: '1.6',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontWeight: '300',
-                textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)'
-              }}>
-                Creative designer focused on exceptional user experiences
-              </p>
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              marginTop: '20rem'
+            }}>
+                  {/* Avatar Circle */}
+                  <div style={{
+                    width: '120px',
+                    height: '120px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, rgba(100, 116, 139, 0.15), rgba(71, 85, 105, 0.1))',
+                    border: '3px solid rgba(71, 85, 105, 0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '1.5rem',
+                    fontSize: '3rem',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5)'
+                  }}>
+                    🎨
+                  </div>
+                  <h3 style={{
+                    fontSize: '1.5rem',
+                    fontWeight: '300',
+                    color: '#1E293B',
+                    marginBottom: '0.5rem',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                    textShadow: 'none'
+                  }}>Arturo Ordaz</h3>
             </div>
 
           </div>
