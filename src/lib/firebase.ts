@@ -108,7 +108,8 @@ export const getCrimePointsAsGeoJSON = async () => {
           city: point.city,
           incident: point.incident,
           date: point.date,
-          details: point.details
+          details: point.details,
+          country: point.country
         },
         geometry: {
           type: "Point",
