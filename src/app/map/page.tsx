@@ -772,7 +772,6 @@ export default function MapPage() {
     )
   }
 
-
   // Mostrar loading solo brevemente mientras se verifica la autenticación
   if (loading) {
     console.log('⏳ Verificando autenticación...')
@@ -1046,7 +1045,7 @@ export default function MapPage() {
       {/* Modal para reportar incidente */}
       {showAddCrimeModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4" 
+          className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4" 
           style={{ 
             zIndex: 9999,
             position: 'fixed',
@@ -1054,42 +1053,37 @@ export default function MapPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            backdropFilter: 'blur(6px)'
+            backdropFilter: 'blur(8px)'
           }}
           onClick={closeAddCrimeModal}
         >
           <div 
-            className="bg-white rounded-2xl shadow-2xl w-[700px] h-[620px] overflow-hidden"
-            style={{ 
-              zIndex: 10000,
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.12)'
-            }}
+            className="crime-modal"
+            style={{ height: '620px' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del modal */}
-            <div className="px-8 py-8 bg-white">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900">Reportar Incidente</h2>
-                  <p className="text-lg text-gray-500 mt-2">Paso {currentStep} de 3</p>
-                </div>
-                <button
-                  onClick={closeAddCrimeModal}
-                  className="w-12 h-12 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 text-2xl transition-colors duration-200"
-                  disabled={isAddingCrime}
-                >
-                  ×
-                </button>
+            <div className="crime-modal-header">
+              <div>
+                <h2 className="crime-modal-title">Reportar Incidente</h2>
+                <p className="crime-modal-subtitle">Paso {currentStep} de 3</p>
               </div>
+              <button
+                onClick={closeAddCrimeModal}
+                className="crime-modal-close"
+                disabled={isAddingCrime}
+              >
+                ×
+              </button>
             </div>
 
             {/* Contenido del modal */}
-            <div className="px-8 pb-8 flex-1 overflow-y-auto">
+            <div className="crime-modal-content">
               {currentStep === 1 && (
                 <div className="h-full flex flex-col">
                   <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Tipo de Incidente</h3>
-                    <p className="text-gray-600">Selecciona el tipo de incidente</p>
+                    <h3 className="crime-section-title">Tipo de Incidente</h3>
+                    <p className="crime-section-subtitle">Selecciona el tipo de incidente</p>
                   </div>
                   
                   {/* Grid de tipos de incidentes */}
@@ -1098,10 +1092,10 @@ export default function MapPage() {
                       <button
                         key={incident.id}
                         onClick={() => selectIncidentType(incident.name)}
-                        className="bg-white border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 rounded-xl p-4 text-center transition-all duration-200 hover:scale-105"
+                        className="crime-incident-button"
                       >
-                        <div className="text-3xl mb-2">{incident.icon}</div>
-                        <div className="text-sm font-medium text-gray-700">{incident.name}</div>
+                        <div className="crime-incident-icon">{incident.icon}</div>
+                        <div className="crime-incident-text">{incident.name}</div>
                       </button>
                     ))}
                   </div>
@@ -1111,34 +1105,34 @@ export default function MapPage() {
               {currentStep === 2 && (
                 <div className="h-full flex flex-col">
                   <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Ubicación y Detalles</h3>
-                    <p className="text-gray-600">Proporciona información básica</p>
+                    <h3 className="crime-section-title">Ubicación y Detalles</h3>
+                    <p className="crime-section-subtitle">Proporciona información básica</p>
                   </div>
                   
                   <div className="space-y-6 flex-1">
                     <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <div className="crime-input-group">
+                        <label className="crime-label">
                           Ciudad *
                         </label>
                         <input
                           type="text"
                           value={newCrimePoint.city}
                           onChange={(e) => setNewCrimePoint({...newCrimePoint, city: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="crime-input"
                           placeholder="Ej: Berlin, Munich, Hamburg..."
                           required
                           disabled={isAddingCrime}
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <div className="crime-input-group">
+                        <label className="crime-label">
                           Nivel de Riesgo
                         </label>
                         <select
                           value={newCrimePoint.risk}
                           onChange={(e) => setNewCrimePoint({...newCrimePoint, risk: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="crime-input"
                           disabled={isAddingCrime}
                         >
                           <option value="Low">🟢 Bajo</option>
@@ -1148,14 +1142,14 @@ export default function MapPage() {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <div className="crime-input-group">
+                      <label className="crime-label">
                         Descripción *
                       </label>
                       <textarea
                         value={newCrimePoint.details}
                         onChange={(e) => setNewCrimePoint({...newCrimePoint, details: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                        className="crime-input"
                         placeholder="Describe brevemente el incidente..."
                         rows={4}
                         required
@@ -1163,8 +1157,8 @@ export default function MapPage() {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <div className="crime-input-group">
+                      <label className="crime-label">
                         Intensidad: {newCrimePoint.intensity}
                       </label>
                       <input
@@ -1175,6 +1169,12 @@ export default function MapPage() {
                         value={newCrimePoint.intensity}
                         onChange={(e) => setNewCrimePoint({...newCrimePoint, intensity: parseFloat(e.target.value)})}
                         className="w-full"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.15)',
+                          borderRadius: '8px',
+                          height: '8px',
+                          outline: 'none'
+                        }}
                         disabled={isAddingCrime}
                       />
                     </div>
@@ -1185,42 +1185,42 @@ export default function MapPage() {
               {currentStep === 3 && (
                 <div className="h-full flex flex-col">
                   <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Confirmar y Enviar</h3>
-                    <p className="text-gray-600">Revisa la información antes de enviar</p>
+                    <h3 className="crime-section-title">Confirmar y Enviar</h3>
+                    <p className="crime-section-subtitle">Revisa la información antes de enviar</p>
                   </div>
                   
-                  <div className="bg-gray-50 rounded-lg p-8 flex-1">
-                    <h4 className="text-xl font-semibold text-gray-900 mb-6">Resumen del Incidente</h4>
+                  <div className="rounded-lg p-8 flex-1" style={{ background: 'rgba(255, 255, 255, 0.1)' }}>
+                    <h4 className="crime-section-title mb-6">Resumen del Incidente</h4>
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-4">
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm text-gray-500 mb-1">Tipo de Incidente</div>
-                          <div className="font-semibold text-gray-900">{newCrimePoint.incident || 'No seleccionado'}</div>
+                        <div className="crime-summary-card">
+                          <div className="crime-summary-label">Tipo de Incidente</div>
+                          <div className="crime-summary-value">{newCrimePoint.incident || 'No seleccionado'}</div>
                         </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm text-gray-500 mb-1">Ciudad</div>
-                          <div className="font-semibold text-gray-900">{newCrimePoint.city || 'No especificada'}</div>
+                        <div className="crime-summary-card">
+                          <div className="crime-summary-label">Ciudad</div>
+                          <div className="crime-summary-value">{newCrimePoint.city || 'No especificada'}</div>
                         </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm text-gray-500 mb-1">Nivel de Riesgo</div>
-                          <div className="font-semibold text-gray-900">{newCrimePoint.risk}</div>
+                        <div className="crime-summary-card">
+                          <div className="crime-summary-label">Nivel de Riesgo</div>
+                          <div className="crime-summary-value">{newCrimePoint.risk}</div>
                         </div>
                       </div>
                       <div className="space-y-4">
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm text-gray-500 mb-1">Intensidad</div>
-                          <div className="font-semibold text-gray-900">{newCrimePoint.intensity}</div>
+                        <div className="crime-summary-card">
+                          <div className="crime-summary-label">Intensidad</div>
+                          <div className="crime-summary-value">{newCrimePoint.intensity}</div>
                         </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm col-span-1">
-                          <div className="text-sm text-gray-500 mb-1">Descripción</div>
-                          <div className="font-semibold text-gray-900">{newCrimePoint.details || 'No especificada'}</div>
+                        <div className="crime-summary-card">
+                          <div className="crime-summary-label">Descripción</div>
+                          <div className="crime-summary-value">{newCrimePoint.details || 'No especificada'}</div>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   <div className="text-center mt-6">
-                    <p className="text-base text-gray-600">
+                    <p className="crime-footer-text">
                       Al enviar, este incidente será agregado al mapa y visible para otros usuarios.
                     </p>
                   </div>
@@ -1228,36 +1228,36 @@ export default function MapPage() {
               )}
             </div>
 
-            {/* Footer con botones limpios */}
-            <div className="bg-white border-t border-gray-200 p-6">
+            {/* Footer con botones */}
+            <div className="crime-modal-footer">
               <div className="flex gap-3">
                 {currentStep > 1 && (
                   <button
                     type="button"
                     onClick={prevStep}
-                    className="px-4 py-2 text-gray-600 font-medium bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+                    className="crime-button"
                     disabled={isAddingCrime}
                   >
                     Atrás
                   </button>
                 )}
                 
-                <button
-                  type="button"
-                  onClick={closeAddCrimeModal}
-                  className={`px-4 py-2 text-gray-600 font-medium bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 ${
-                    currentStep > 1 ? '' : 'flex-1'
-                  }`}
-                  disabled={isAddingCrime}
-                >
-                  Cancelar
-                </button>
+                {currentStep === 1 && (
+                  <button
+                    type="button"
+                    onClick={closeAddCrimeModal}
+                    className="crime-button flex-1"
+                    disabled={isAddingCrime}
+                  >
+                    Cancelar
+                  </button>
+                )}
 
                 {currentStep < 3 ? (
                   <button
                     type="button"
                     onClick={nextStep}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                    className="crime-button flex-1"
                     disabled={isAddingCrime}
                   >
                     Siguiente
@@ -1267,7 +1267,7 @@ export default function MapPage() {
                     type="button"
                     onClick={handleAddCrimePoint}
                     disabled={isAddingCrime || !newCrimePoint.city || !newCrimePoint.details}
-                    className="flex-1 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    className="crime-button flex-1"
                   >
                     {isAddingCrime ? 'Enviando...' : 'Enviar Incidente'}
                   </button>
