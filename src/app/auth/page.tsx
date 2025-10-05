@@ -200,11 +200,6 @@ export default function AuthPage() {
       {!showLoginModal && !showRegisterModal && (
         <div className="flex justify-center items-center pb-20">
           <div className="flex gap-4">
-            <button className="portal-button" onClick={() => router.push('/map')}>
-              <span className="button-text">Explore the portal</span>
-              <span className="arrow-circle">→</span>
-            </button>
-            
             <button className="portal-button" onClick={openLoginModal}>
               <span className="button-text">Sign In</span>
               <span className="arrow-circle">→</span>

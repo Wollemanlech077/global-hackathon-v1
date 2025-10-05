@@ -6,6 +6,7 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import { getCrimePointsAsGeoJSON, addCrimePoint, auth } from '@/lib/firebase'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 export default function MapPage() {
   const mapContainer = useRef<HTMLDivElement>(null)
@@ -1103,7 +1104,11 @@ export default function MapPage() {
           zIndex: 9999
         }}
       >
-        <button className="portal-button" onClick={() => router.push('/')}>
+        <button className="portal-button" onClick={() => router.push('/')} style={{
+          background: 'rgba(100, 116, 139, 0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)'
+        }}>
           <span className="button-text">Back to Portal</span>
           <span className="arrow-circle">←</span>
         </button>
@@ -1136,8 +1141,22 @@ export default function MapPage() {
             onClick={handleLogout}
             className="map-control-bubble"
             title="Sign Out"
+            style={{
+              padding: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
           >
-            🚪
+            <Image 
+              src="/logo.png" 
+              alt="Logout" 
+              width={28}
+              height={28}
+              style={{
+                objectFit: 'contain'
+              }}
+            />
           </button>
           
           {/* Zoom controls */}
